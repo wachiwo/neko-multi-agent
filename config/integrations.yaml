@@ -1,0 +1,56 @@
+# =^._.^= 外部ツール連携設定
+# 番頭猫・作業猫(犬)が外部サービスと連携する際の設定
+
+# ═══════════════════════════════════════════════════════════════
+# Slack 通知
+# ═══════════════════════════════════════════════════════════════
+slack:
+  enabled: false
+  webhook_url: ""  # Incoming Webhook URL をここに設定
+  notifications:
+    on_task_complete: true      # タスク完了時に通知
+    on_error: true              # エラー発生時に通知
+    on_escalation: true         # エスカレーション時に通知
+    on_approval_required: true  # 人間承認待ち時に通知
+  # 通知フォーマット例:
+  # curl -X POST -H 'Content-type: application/json' \
+  #   --data '{"text":"[neko-multi-agent] cmd_001 完了にゃ！"}' \
+  #   "$SLACK_WEBHOOK_URL"
+
+# ═══════════════════════════════════════════════════════════════
+# GitHub 自動コミット
+# ═══════════════════════════════════════════════════════════════
+github:
+  enabled: false
+  auto_commit: false            # 成果物の自動コミット
+  auto_push: false              # 自動push（要注意）
+  branch_prefix: "neko/"        # 自動作成ブランチのプレフィックス
+  commit_message_prefix: "[neko-multi-agent]"
+  # コミット対象ディレクトリ（これ以外はコミットしない）
+  allowed_paths:
+    - "outputs/"
+    - "docs/"
+  # 除外パターン
+  exclude_patterns:
+    - "*.log"
+    - "*.tmp"
+    - ".env"
+    - "credentials*"
+
+# ═══════════════════════════════════════════════════════════════
+# ローカルファイル出力
+# ═══════════════════════════════════════════════════════════════
+local_output:
+  enabled: true
+  base_path: "outputs/"
+  # 出力構造:
+  #   outputs/
+  #   ├── {project_name}/
+  #   │   ├── {cmd_id}/
+  #   │   │   ├── worker1_output.md
+  #   │   │   ├── worker2_output.md
+  #   │   │   └── ...
+  #   │   └── final/
+  #   │       └── merged_output.md
+  #   └── ...
+  organize_by: "project_and_cmd"  # project_and_cmd | date | flat

@@ -3,16 +3,16 @@ name: skill-creator
 description: 汎用的な作業パターンを発見した際に、再利用可能なClaude Codeスキルを自動生成する。繰り返し使えるワークフロー、ベストプラクティス、ドメイン知識をスキル化する時に使用。
 ---
 
-# Skill Creator - スキル自動生成
+# Skill Creator - スキル自動生成にゃ
 
 ## Overview
 
-作業中に発見した汎用的なパターンを、再利用可能なClaude Codeスキルとして保存する。
-これにより、同じ作業を繰り返す際の品質と効率が向上する。
+作業中に発見した汎用的なパターンを、再利用可能なClaude Codeスキルとして保存するにゃ。
+これにより、同じ作業を繰り返す際の品質と効率が向上するにゃ。
 
 ## When to Create a Skill
 
-以下の条件を満たす場合、スキル化を検討せよ：
+以下の条件を満たす場合、スキル化を検討するにゃ：
 
 1. **再利用性**: 他のプロジェクトでも使えるパターン
 2. **複雑性**: 単純すぎず、手順や知識が必要なもの
@@ -21,10 +21,10 @@ description: 汎用的な作業パターンを発見した際に、再利用可�
 
 ## Skill Structure
 
-生成するスキルは以下の構造に従う：
+生成するスキルは以下の構造に従うにゃ：
 
 ```
-skill-name/
+neko-{skill-name}/
 ├── SKILL.md          # 必須
 ├── scripts/          # オプション（実行スクリプト）
 └── resources/        # オプション（参照ファイル）
@@ -66,7 +66,7 @@ description: {いつこのスキルを使うか、具体的なユースケース
    - kebab-case を使用（例: api-error-handler）
    - 動詞+名詞 or 名詞+名詞
 
-3. description の記述（最重要）
+3. description の記述（最重要にゃ！）
    - Claude がいつこのスキルを使うか判断する材料
    - 具体的なユースケース、ファイルタイプ、アクション動詞を含める
    - 悪い例: "ドキュメント処理スキル"
@@ -78,24 +78,47 @@ description: {いつこのスキルを使うか、具体的なユースケース
    - エッジケースの対処
 
 5. 保存
-   - パス: ~/.claude/skills/shogun-{skill-name}/
+   - パス: ~/.claude/skills/neko-{skill-name}/
    - 既存スキルと名前が被らないか確認
 
 ## 使用フロー
 
-このスキルはKaroがShogunからの指示を受けて使用する。
+このスキルは番頭猫が親分猫からの指示を受けて使用するにゃ。
 
-1. Ashigaruがスキル化候補を発見 → Karoに報告
-2. Karo → Shogunに報告
-3. **Shogunが最新仕様をリサーチし、スキル設計を行う**
-4. Shogunが人間に承認を依頼（dashboard.md経由）
-5. 人間が承認
-6. Shogun → Karoに作成を指示（設計書付き）
-7. **Karo がこのskill-creatorを使用してスキルを作成**
+1. 作業猫(犬)がスキル化候補を発見 → 番頭猫に報告
+2. 番頭猫 → dashboard.md に記載
+3. **親分猫が最新仕様をリサーチし、スキル設計を行う**
+4. 親分猫がご主人様に承認を依頼（dashboard.md「要対応」経由）
+5. ご主人様が承認
+6. 親分猫 → 番頭猫にスキル作成を指示（設計書付き）
+7. **番頭猫がこのskill-creatorを使用してスキルを作成**
 8. 完了報告
 
-※ Shogunがリサーチした最新仕様に基づいて作成すること。
-※ Shogunからの設計書に従うこと。
+※ 親分猫がリサーチした最新仕様に基づいて作成することにゃ。
+※ 親分猫からの設計書に従うことにゃ。
+
+## 親分猫のスキル設計書フォーマット
+
+番頭猫は親分猫から以下の形式で設計書を受け取るにゃ。
+この設計書に忠実に従ってスキルを作成するにゃ。
+
+```yaml
+skill_design:
+  name: "{kebab-case名}"
+  description: "{具体的なユースケース}"
+  trigger: "{いつ使うか}"
+  save_path: "~/.claude/skills/neko-{skill-name}/"
+  instructions:
+    overview: "{何をするか}"
+    when_to_use: "{トリガーとなる状況}"
+    steps: []
+    guidelines: []
+    examples: []
+  evaluation:
+    score: "{点数}/20"
+    recommendation: "✅ / ⭕ / ❌"
+    reason: "{推奨理由}"
+```
 
 ## Examples of Good Skills
 
@@ -125,9 +148,9 @@ description: 入力データのバリデーションパターン集。メール�
 
 ## Reporting Format
 
-スキル生成時は以下の形式で報告：
+スキル生成時は以下の形式で報告するにゃ：
 
-「はっ！(Ha!) 新たなる技を編み出しました(New skill created!)
+「新しいスキルを作ったにゃ！
 - スキル名: {name}
 - 用途: {description}
 - 保存先: {path}」

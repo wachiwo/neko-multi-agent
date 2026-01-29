@@ -6,6 +6,7 @@
 # 互換性のため、全ての引数を shutsujin_departure.sh に転送します。
 #
 # 推奨: 直接 ./shutsujin_departure.sh を使用してください。
+# =^._.^= neko-multi-agent
 # ═══════════════════════════════════════════════════════════════════════════════
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

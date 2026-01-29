@@ -1,33 +1,64 @@
-# Order file (internal use only)
-claude-shogun-orders.md
+# ============================================================
+# neko-multi-agent .gitignore
+# ============================================================
 
-# Claude Code settings
+# Claude Code settings (local to each user)
 .claude/
+**/.claude/
 
-# Test outputs (generated during testing)
+# Runtime data (generated during operation)
+dashboard.md
+task.md
+status/
+logs/
+memory/
+outputs/
+output/
+demo_output/
 test_output/
 
-# Generated skills (local development)
-skills/
+# Queue files (runtime state, contains task history)
+queue/*.yaml
+queue/tasks/
+queue/reports/
+queue/research/
+
+# Config files (generated per installation)
+config/projects.yaml
+config/settings.yaml
+
+# Personal app data & sync scripts (user-specific)
+apps/
+git-practice/
+
+# Skills (locally generated, except skill-creator)
+skills/*
+!skills/skill-creator/
+
+# Legacy files
+claude-shogun-orders.md
 
 # Temporary files
 *.tmp
 *.bak
+*.log
 
-# Demo/analysis outputs (generated during tasks)
-demo_output/
+# Database files
+*.db
 
-# Runtime data (generated during operation)
-output/
-queue/research/
-queue/tasks/
-queue/reports/
+# Python
+**/__pycache__/
+*.pyc
+*.pyo
 
-# Memory MCP data (local to each installation)
-memory/
-queue/*.yaml
-dashboard.md
-config/projects.yaml
-status/
-config/settings.yaml
-logs/
+# Environment
+**/.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Personal projects & apps (user-specific)
+todo-app/
+todo-app.html
+todo.html
