@@ -36,7 +36,7 @@
       └──────┬──────┘
              │ YAML files + tmux
       ┌──────▼──────┐
-      │   BANTOU     │  ← Foreman Cat: distributes tasks to workers
+      │   KASHIRA    │  ← Head Cat: distributes tasks to workers
       │   (頭猫)   │
       └──────┬──────┘
              │
@@ -240,7 +240,7 @@ After running the startup script, **6 AI agents** will start automatically:
 | Agent | Role | Quantity |
 |-------|------|----------|
 | Oyabun (Boss Cat) | Commander - receives your orders | 1 |
-| Kashira (Foreman Cat) | Manager - distributes tasks & reviews code | 1 |
+| Kashira (Head Cat) | Manager - distributes tasks & reviews code | 1 |
 | Worker Cats/Dog | Workers - execute tasks in parallel | 4 |
 
 You'll see tmux sessions created:
