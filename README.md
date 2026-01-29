@@ -37,7 +37,7 @@
              │ YAML files + tmux
       ┌──────▼──────┐
       │   BANTOU     │  ← Foreman Cat: distributes tasks to workers
-      │   (番頭猫)   │
+      │   (頭猫)   │
       └──────┬──────┘
              │
       ┌──┬──┼──┬──┐
@@ -240,12 +240,12 @@ After running the startup script, **6 AI agents** will start automatically:
 | Agent | Role | Quantity |
 |-------|------|----------|
 | Oyabun (Boss Cat) | Commander - receives your orders | 1 |
-| Bantou (Foreman Cat) | Manager - distributes tasks & reviews code | 1 |
+| Kashira (Foreman Cat) | Manager - distributes tasks & reviews code | 1 |
 | Worker Cats/Dog | Workers - execute tasks in parallel | 4 |
 
 You'll see tmux sessions created:
 - `oyabun` - Connect here to give commands
-- `multiagent` - Bantou + 4 workers running (5 panes)
+- `multiagent` - Kashira + 4 workers running (5 panes)
 
 ---
 
@@ -271,10 +271,10 @@ Investigate the top 5 JavaScript frameworks and create a comparison table.
 
 The Oyabun will:
 1. Write the task to a YAML file
-2. Notify the Bantou (foreman)
+2. Notify the Kashira (foreman)
 3. Return control to you immediately (you don't have to wait!)
 
-Meanwhile, the Bantou distributes the work to worker cats who execute in parallel.
+Meanwhile, the Kashira distributes the work to worker cats who execute in parallel.
 
 ### Step 3: Check Progress
 
@@ -350,11 +350,11 @@ You: "Check the latest screenshot"
 
 ### 6. Auto Error Retry
 
-Workers automatically retry up to 3 times on failure, changing their approach each time. If all retries fail, the Bantou reassigns the task to another worker.
+Workers automatically retry up to 3 times on failure, changing their approach each time. If all retries fail, the Kashira reassigns the task to another worker.
 
 ### 7. Code Review
 
-The Bantou reviews code output for syntax, security, performance, and readability issues before marking tasks as complete.
+The Kashira reviews code output for syntax, security, performance, and readability issues before marking tasks as complete.
 
 ### 8. Learning System
 
@@ -365,7 +365,7 @@ Success and failure patterns are stored in `memory/patterns.yaml`. Workers refer
 | Agent | Model | Thinking | Reason |
 |-------|-------|----------|--------|
 | Oyabun | Opus | Disabled | Delegation & dashboard updates don't need deep reasoning |
-| Bantou | Default | Enabled | Task distribution requires careful judgment |
+| Kashira | Default | Enabled | Task distribution requires careful judgment |
 | Workers | Default | Enabled | Actual implementation needs full capabilities |
 
 ### Skills
@@ -380,11 +380,11 @@ Review and approve them to grow your personal skill library.
 
 ### Why Hierarchical Structure?
 
-The Oyabun -> Bantou -> Workers hierarchy exists for:
+The Oyabun -> Kashira -> Workers hierarchy exists for:
 
 1. **Immediate Response**: Oyabun delegates instantly and returns control to you
-2. **Parallel Execution**: Bantou distributes to multiple workers simultaneously
-3. **Separation of Concerns**: Oyabun decides "what", Bantou decides "who"
+2. **Parallel Execution**: Kashira distributes to multiple workers simultaneously
+3. **Separation of Concerns**: Oyabun decides "what", Kashira decides "who"
 4. **No Interruption**: Workers report via dashboard.md only (no send-keys upward), preventing input interruption
 
 ### Why YAML + send-keys?
@@ -393,10 +393,10 @@ The Oyabun -> Bantou -> Workers hierarchy exists for:
 - **send-keys**: Event-driven wakeups (no polling = no wasted API calls)
 - **No direct calls**: Agents can't interrupt each other or your input
 
-### Why Only Bantou Updates Dashboard?
+### Why Only Kashira Updates Dashboard?
 
 - **Single responsibility**: One writer = no conflicts
-- **Information hub**: Bantou receives all reports, knows the full picture
+- **Information hub**: Kashira receives all reports, knows the full picture
 - **Consistency**: All updates go through one quality gate
 
 ---
@@ -434,8 +434,8 @@ Verify with `claude mcp list`.
 You: "Research the top 4 AI coding assistants and compare them"
 
 What happens:
-1. Oyabun delegates to Bantou
-2. Bantou assigns:
+1. Oyabun delegates to Kashira
+2. Kashira assigns:
    - Cat #1: Research GitHub Copilot
    - Dog #2: Research Cursor
    - Cat #3: Research Claude Code
@@ -450,12 +450,12 @@ What happens:
 You: "Build a Flask web app with user authentication"
 
 What happens:
-1. Bantou splits into subtasks:
+1. Kashira splits into subtasks:
    - Cat #1: Database schema + models
    - Dog #2: API routes + authentication
    - Cat #3: Frontend templates + CSS
    - Cat #4: Tests + documentation
-2. Bantou reviews each worker's output
+2. Kashira reviews each worker's output
 3. Results assembled and reported
 ```
 
@@ -582,7 +582,7 @@ neko-multi-agent/
 |
 +-- instructions/             # Agent instruction files
 |   +-- oyabun.md             # Boss Cat instructions
-|   +-- bantou.md             # Foreman Cat instructions
+|   +-- kashira.md            # Head Cat instructions
 |   +-- 1gou-neko.md          # Worker Cat #1 instructions
 |   +-- 2gou-inu.md           # Worker Dog #2 instructions
 |   +-- 3gou-neko.md          # Worker Cat #3 instructions
@@ -592,7 +592,7 @@ neko-multi-agent/
 |   +-- settings.yaml         # Language and other settings
 |
 +-- queue/                    # Communication files
-|   +-- oyabun_to_bantou.yaml # Commands from Oyabun to Bantou
+|   +-- oyabun_to_kashira.yaml # Commands from Oyabun to Kashira
 |   +-- tasks/                # Individual worker task files
 |   +-- reports/              # Worker reports
 |

@@ -135,7 +135,7 @@ NEKO_EOF
     echo -e "\033[1;33m  ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\033[0m"
     echo -e "\033[1;33m  ┃\033[0m  \033[1;37m=^._.^= neko-multi-agent\033[0m  〜 \033[1;36mねこマルチエージェントシステム\033[0m 〜              \033[1;33m┃\033[0m"
     echo -e "\033[1;33m  ┃\033[0m                                                                           \033[1;33m┃\033[0m"
-    echo -e "\033[1;33m  ┃\033[0m    \033[1;35m親分猫\033[0m: プロジェクト統括    \033[1;31m番頭猫\033[0m: タスク管理    \033[1;34m作業猫(犬)\033[0m: 実働×4    \033[1;33m┃\033[0m"
+    echo -e "\033[1;33m  ┃\033[0m    \033[1;35m親分猫\033[0m: プロジェクト統括    \033[1;31m頭猫\033[0m: タスク管理    \033[1;34m作業猫(犬)\033[0m: 実働×4    \033[1;33m┃\033[0m"
     echo -e "\033[1;33m  ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\033[0m"
     echo ""
 }
@@ -170,7 +170,7 @@ if [ "$NEED_BACKUP" = true ]; then
     cp "./dashboard.md" "$BACKUP_DIR/" 2>/dev/null || true
     cp -r "./queue/reports" "$BACKUP_DIR/" 2>/dev/null || true
     cp -r "./queue/tasks" "$BACKUP_DIR/" 2>/dev/null || true
-    cp "./queue/oyabun_to_bantou.yaml" "$BACKUP_DIR/" 2>/dev/null || true
+    cp "./queue/oyabun_to_kashira.yaml" "$BACKUP_DIR/" 2>/dev/null || true
     log_info "前回の記録をバックアップしたにゃ: $BACKUP_DIR"
 fi
 
@@ -210,7 +210,7 @@ EOF
 done
 
 # キューファイルリセット
-cat > ./queue/oyabun_to_bantou.yaml << 'EOF'
+cat > ./queue/oyabun_to_kashira.yaml << 'EOF'
 queue: []
 EOF
 
@@ -284,7 +284,7 @@ log_success "  └─ にゃんボード初期化完了 (言語: $LANG_SETTING)"
 echo ""
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# STEP 4: multiagentセッション作成（5ペイン：bantou + worker1-4）
+# STEP 4: multiagentセッション作成（5ペイン：kashira + worker1-4）
 # ═══════════════════════════════════════════════════════════════════════════════
 # tmux の存在確認
 if ! command -v tmux &> /dev/null; then
@@ -301,7 +301,7 @@ if ! command -v tmux &> /dev/null; then
     exit 1
 fi
 
-log_neko "番頭猫・作業猫(犬)のお部屋を準備中にゃ（5名配備）..."
+log_neko "頭猫・作業猫(犬)のお部屋を準備中にゃ（5名配備）..."
 
 # 最初のペイン作成
 if ! tmux new-session -d -s multiagent -n "agents" 2>/dev/null; then
@@ -320,7 +320,7 @@ if ! tmux new-session -d -s multiagent -n "agents" 2>/dev/null; then
     exit 1
 fi
 
-# 1x5グリッド作成（横一列に5ペイン: bantou + worker1-4）
+# 1x5グリッド作成（横一列に5ペイン: kashira + worker1-4）
 # 注意: split-window はフォーカスを新ペインに移すため、分割元ペインを明示指定する
 # new-session で Pane 0 が作成済み。以降は最後のペインを分割して右に追加。
 tmux split-window -h -t "multiagent:0.0"
@@ -332,16 +332,16 @@ tmux select-layout -t "multiagent:0" even-horizontal
 tmux split-window -h -t "multiagent:0.3"
 tmux select-layout -t "multiagent:0" even-horizontal
 
-# ペインタイトル設定（0: bantou, 1-4: worker1-4）
-PANE_TITLES=("bantou" "worker1" "worker2" "worker3" "worker4")
-PANE_COLORS=("1;31" "1;34" "1;33" "1;32" "1;36")  # bantou: 赤, worker1: 青, worker2: 黄, worker3: 緑, worker4: シアン
+# ペインタイトル設定（0: kashira, 1-4: worker1-4）
+PANE_TITLES=("kashira" "worker1" "worker2" "worker3" "worker4")
+PANE_COLORS=("1;31" "1;34" "1;33" "1;32" "1;36")  # kashira: 赤, worker1: 青, worker2: 黄, worker3: 緑, worker4: シアン
 
 for i in {0..4}; do
     tmux select-pane -t "multiagent:0.$i" -T "${PANE_TITLES[$i]}"
     tmux send-keys -t "multiagent:0.$i" "cd \"$(pwd)\" && export PS1='(\[\033[${PANE_COLORS[$i]}m\]${PANE_TITLES[$i]}\[\033[0m\]) \[\033[1;32m\]\w\[\033[0m\]\$ ' && clear" Enter
 done
 
-log_success "  └─ 番頭猫・作業猫(犬)のお部屋、準備完了にゃ"
+log_success "  └─ 頭猫・作業猫(犬)のお部屋、準備完了にゃ"
 echo ""
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -391,13 +391,13 @@ if [ "$SETUP_ONLY" = false ]; then
     # 少し待機（安定のため）
     sleep 1
 
-    # 番頭猫 + 作業猫(犬)（5ペイン）
+    # 頭猫 + 作業猫(犬)（5ペイン）
     for i in {0..4}; do
         tmux send-keys -t "multiagent:0.$i" "claude --dangerously-skip-permissions"
         tmux send-keys -t "multiagent:0.$i" Enter
         sleep 1
     done
-    log_info "  └─ 番頭猫・作業猫(犬)、召喚完了にゃ"
+    log_info "  └─ 頭猫・作業猫(犬)、召喚完了にゃ"
 
     log_success "全員 Claude Code 起動完了にゃ！"
     echo ""
@@ -446,10 +446,10 @@ NEKO_DEPART_EOF
     sleep 0.5
     tmux send-keys -t oyabun Enter
 
-    # 番頭猫に指示書を読み込ませる
+    # 頭猫に指示書を読み込ませる
     sleep 2
-    log_info "  └─ 番頭猫に指示書を伝達中にゃ..."
-    tmux send-keys -t "multiagent:0.0" "instructions/bantou.md を読んで役割を理解するにゃ。"
+    log_info "  └─ 頭猫に指示書を伝達中にゃ..."
+    tmux send-keys -t "multiagent:0.0" "instructions/kashira.md を読んで役割を理解するにゃ。"
     sleep 0.5
     tmux send-keys -t "multiagent:0.0" Enter
 
@@ -490,10 +490,10 @@ echo "     ┌──────────────────────
 echo "     │  Pane 0: 親分猫 (OYABUN)   │  ← 統括・プロジェクト管理"
 echo "     └─────────────────────────────┘"
 echo ""
-echo "     【multiagentセッション】番頭猫・作業猫(犬)のお部屋（1x5 = 5ペイン）"
+echo "     【multiagentセッション】頭猫・作業猫(犬)のお部屋（1x5 = 5ペイン）"
 echo "     ┌─────────┬─────────┬─────────┬─────────┬─────────┐"
-echo "     │ bantou  │ worker1 │ worker2 │ worker3 │ worker4 │"
-echo "     │(番頭猫) │(1号猫)  │(2号犬)  │(3号猫)  │(4号猫)  │"
+echo "     │ kashira  │ worker1 │ worker2 │ worker3 │ worker4 │"
+echo "     │(頭猫) │(1号猫)  │(2号犬)  │(3号猫)  │(4号猫)  │"
 echo "     └─────────┴─────────┴─────────┴─────────┴─────────┘"
 echo ""
 
@@ -511,7 +511,7 @@ if [ "$SETUP_ONLY" = true ]; then
     echo "  │  # 親分猫を召喚                                          │"
     echo "  │  tmux send-keys -t oyabun 'claude --dangerously-skip-permissions' Enter │"
     echo "  │                                                          │"
-    echo "  │  # 番頭猫・作業猫(犬)を一斉召喚                          │"
+    echo "  │  # 頭猫・作業猫(犬)を一斉召喚                          │"
     echo "  │  for i in {0..4}; do \\                                   │"
     echo "  │    tmux send-keys -t multiagent:0.\$i \\                   │"
     echo "  │      'claude --dangerously-skip-permissions' Enter       │"
@@ -525,7 +525,7 @@ echo "  ┌───────────────────────
 echo "  │  親分猫のお部屋にアタッチして命令開始:                    │"
 echo "  │     tmux attach-session -t oyabun   (または: css)        │"
 echo "  │                                                          │"
-echo "  │  番頭猫・作業猫(犬)のお部屋を確認:                       │"
+echo "  │  頭猫・作業猫(犬)のお部屋を確認:                       │"
 echo "  │     tmux attach-session -t multiagent   (または: csm)    │"
 echo "  │                                                          │"
 echo "  │  ※ 各エージェントは指示書を読み込み済み。                 │"

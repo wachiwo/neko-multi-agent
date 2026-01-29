@@ -108,7 +108,7 @@ csm
 # 親分猫のセッション（指示を出す場所）
 tmux attach-session -t oyabun
 
-# 番頭猫・作業猫(犬)のセッション（作業状況を見る場所）
+# 頭猫・作業猫(犬)のセッション（作業状況を見る場所）
 tmux attach-session -t multiagent
 ```
 
@@ -130,7 +130,7 @@ multiagentセッションには5つのペインがある。
 
 | ペイン | 役割 |
 |--------|------|
-| 0 | 番頭猫（bantou） |
+| 0 | 頭猫（kashira） |
 | 1 | 1号猫（worker1） |
 | 2 | 2号犬（worker2） |
 | 3 | 3号猫（worker3） |
@@ -167,7 +167,7 @@ q
 
 1. oyabunセッションにアタッチする
 2. Claude Code のプロンプトに日本語で指示を入力する
-3. 親分猫が番頭猫→作業猫(犬)へタスクを分配する
+3. 親分猫が頭猫→作業猫(犬)へタスクを分配する
 
 ```bash
 # 1. アタッチ
@@ -181,7 +181,7 @@ tmux attach-session -t oyabun
 
 - 何をしたいか具体的に書く
 - プロジェクトのパスがあれば含める
-- 親分猫が番頭猫経由で作業猫(犬)に分配するので、細かい作業指示は不要
+- 親分猫が頭猫経由で作業猫(犬)に分配するので、細かい作業指示は不要
 
 ---
 
@@ -209,7 +209,7 @@ cat ~/neko-multi-agent/dashboard.md
 ### 各エージェントの画面を直接確認
 
 ```bash
-# 番頭猫の画面を見る（アタッチせずに）
+# 頭猫の画面を見る（アタッチせずに）
 tmux capture-pane -t multiagent:0.0 -p | tail -20
 
 # 作業猫1号の画面を見る
@@ -256,7 +256,7 @@ tmux kill-server
 ### 特定のエージェントだけ再起動
 
 ```bash
-# 例: 番頭猫（pane 0）だけ再起動
+# 例: 頭猫（pane 0）だけ再起動
 # 1. multiagentセッションにアタッチ
 tmux attach-session -t multiagent
 # 2. Ctrl+b → q → 0 でpane 0に移動

@@ -14,7 +14,7 @@ neko-multi-agentは、Claude Code + tmux を使ったマルチエージェント
 1. **自分のpane名を確認**: `tmux display-message -p '#W'`
 2. **対応する instructions を読む**:
    - oyabun → instructions/oyabun.md
-   - bantou (multiagent:0.0) → instructions/bantou.md
+   - kashira (multiagent:0.0) → instructions/kashira.md
    - worker1 (multiagent:0.1) → instructions/1gou-neko.md
    - worker2 (multiagent:0.2) → instructions/2gou-inu.md
    - worker3 (multiagent:0.3) → instructions/3gou-neko.md
@@ -36,8 +36,8 @@ summaryの「次のステップ」を見てすぐ作業してはならぬ。ま�
        │ YAMLファイル経由
        ▼
 ┌──────────────┐
-│   BANTOU     │ ← 番頭猫（タスク管理・分配）
-│  (番頭猫)    │
+│   KASHIRA     │ ← 頭猫（タスク管理・分配）
+│  (頭猫)    │
 └──────┬───────┘
        │ YAMLファイル経由
        ▼
@@ -65,8 +65,8 @@ summaryの「次のステップ」を見てすぐ作業してはならぬ。ま�
 ### 報告の流れ（割り込み防止設計）
 - **下→上への報告**: dashboard.md 更新 + cmd完了時のみ send-keys 通知（idle確認必須）
 - **上→下への指示**: YAML + send-keys で起こす
-- 番頭猫→親分猫の send-keys: cmd全完了時のみ許可（idle確認後に送信）
-- 作業猫(犬)→親分猫の send-keys: 禁止（番頭猫経由）
+- 頭猫→親分猫の send-keys: cmd全完了時のみ許可（idle確認後に送信）
+- 作業猫(犬)→親分猫の send-keys: 禁止（頭猫経由）
 
 ### ファイル構成
 ```
@@ -74,12 +74,12 @@ config/projects.yaml                # プロジェクト一覧
 config/settings.yaml                # 言語・ログ設定
 config/integrations.yaml            # 外部ツール連携設定（Slack/GitHub/出力）
 status/agent_status.yaml            # エージェントステータス（リアルタイム）
-queue/oyabun_to_bantou.yaml         # 親分猫 → 番頭猫 指示
-queue/tasks/worker{N}.yaml          # 番頭猫 → 作業猫(犬) 割当（各自専用）
-queue/reports/worker{N}_report.yaml # 作業猫(犬) → 番頭猫 報告
+queue/oyabun_to_kashira.yaml         # 親分猫 → 頭猫 指示
+queue/tasks/worker{N}.yaml          # 頭猫 → 作業猫(犬) 割当（各自専用）
+queue/reports/worker{N}_report.yaml # 作業猫(犬) → 頭猫 報告
 queue/approval_required.yaml        # 人間介入リクエスト（承認待ち）
 dashboard.md                        # ご主人様用にゃんボード
-task.md                             # タスク管理台帳（番頭猫の引き継ぎ用、全cmd履歴）
+task.md                             # タスク管理台帳（頭猫の引き継ぎ用、全cmd履歴）
 memory/patterns.yaml                # 学習パターンDB（成功/失敗/回避策）
 logs/YYYY-MM-DD_cmd_XXX.md          # タスクごとの作業ログ
 outputs/{project}/{cmd_id}/         # 成果物出力先
@@ -99,25 +99,25 @@ apps/sync_catalog.sh                # catalog.md → Google ドライブ自動�
 
 #### エラー自動リトライ
 - 作業猫(犬)はエラー時に最大3回自動リトライ（毎回アプローチを変える）
-- 3回失敗で番頭猫に `retry_exhausted: true` で報告
-- 番頭猫が別の作業猫(犬)に再割当 or エスカレーション
+- 3回失敗で頭猫に `retry_exhausted: true` で報告
+- 頭猫が別の作業猫(犬)に再割当 or エスカレーション
 
 #### タスク優先度管理
 - タスクYAMLに `priority: high|medium|low` フィールド
-- 番頭猫が優先度と負荷を見て均等分散
+- 頭猫が優先度と負荷を見て均等分散
 
 #### コードレビュー
-- 番頭猫がコード成果物をレビュー（構文/セキュリティ/パフォーマンス/可読性）
+- 頭猫がコード成果物をレビュー（構文/セキュリティ/パフォーマンス/可読性）
 - 問題あれば `review_feedback` 付きで修正指示
 
 #### 学習機能
 - `memory/patterns.yaml` に成功/失敗パターンを蓄積
 - 作業猫(犬)はタスク開始前にパターンを参照
-- 番頭猫はタスク割当時に関連パターンを `hints` に含める
+- 頭猫はタスク割当時に関連パターンを `hints` に含める
 
 #### 人間介入ポイント
 - 重要判断は `queue/approval_required.yaml` + dashboard.md「要対応」
-- 承認後に親分猫→番頭猫で作業続行
+- 承認後に親分猫→頭猫で作業続行
 
 #### 外部ツール連携
 - Slack webhook（完了/エラー/承認待ち通知）
@@ -138,7 +138,7 @@ apps/sync_catalog.sh                # catalog.md → Google ドライブ自動�
 - Pane 0: 親分猫（OYABUN）
 
 ### multiagentセッション（5ペイン）
-- Pane 0: 番頭猫（bantou）
+- Pane 0: 頭猫（kashira）
 - Pane 1: 1号猫（worker1）
 - Pane 2: 2号犬（worker2）
 - Pane 3: 3号猫（worker3）
@@ -170,7 +170,7 @@ language: ja  # ja, en, es, zh, ko, fr, de 等
 
 ## 指示書
 - instructions/oyabun.md - 親分猫の指示書
-- instructions/bantou.md - 番頭猫の指示書
+- instructions/kashira.md - 頭猫の指示書
 - instructions/1gou-neko.md - 1号猫の指示書
 - instructions/2gou-inu.md - 2号犬の指示書
 - instructions/3gou-neko.md - 3号猫の指示書
@@ -180,7 +180,7 @@ language: ja  # ja, en, es, zh, ko, fr, de 等
 
 コンパクション用のsummaryを生成する際は、以下を必ず含めよ：
 
-1. **エージェントの役割**: 親分猫/番頭猫/作業猫(犬)のいずれか
+1. **エージェントの役割**: 親分猫/頭猫/作業猫(犬)のいずれか
 2. **主要な禁止事項**: そのエージェントの禁止事項リスト
 3. **現在のタスクID**: 作業中のcmd_xxx
 
@@ -206,21 +206,21 @@ MCPツールは遅延ロード方式。使用前に必ず `ToolSearch` で検索
 > コンパクション後に不安な場合は `mcp__memory__read_graph` で確認せよ。
 
 ### 1. にゃんボード更新
-- **dashboard.md の更新は番頭猫の責任**
-- 親分猫は番頭猫に指示を出し、番頭猫が更新する
+- **dashboard.md の更新は頭猫の責任**
+- 親分猫は頭猫に指示を出し、頭猫が更新する
 - 親分猫は dashboard.md を読んで状況を把握する
 
 ### 2. 指揮系統の遵守
-- 親分猫 → 番頭猫 → 作業猫(犬) の順で指示
+- 親分猫 → 頭猫 → 作業猫(犬) の順で指示
 - 親分猫が直接作業猫(犬)に指示してはならない
-- 番頭猫を経由せよ
+- 頭猫を経由せよ
 
 ### 3. 報告ファイルの確認
 - 作業猫(犬)の報告は queue/reports/worker{N}_report.yaml
-- 番頭猫からの報告待ちの際はこれを確認
+- 頭猫からの報告待ちの際はこれを確認
 
-### 4. 番頭猫の状態確認
-- 指示前に番頭猫が処理中か確認: `tmux capture-pane -t multiagent:0.0 -p | tail -20`
+### 4. 頭猫の状態確認
+- 指示前に頭猫が処理中か確認: `tmux capture-pane -t multiagent:0.0 -p | tail -20`
 - "thinking", "Effecting…" 等が表示中なら待機
 
 ### 5. スクリーンショットの場所
@@ -230,7 +230,7 @@ MCPツールは遅延ロード方式。使用前に必ず `ToolSearch` で検索
 
 ### 6. スキル化候補の確認
 - 作業猫(犬)の報告には `skill_candidate:` が必須
-- 番頭猫は作業猫(犬)からの報告でスキル化候補を確認し、dashboard.md に記載
+- 頭猫は作業猫(犬)からの報告でスキル化候補を確認し、dashboard.md に記載
 - 親分猫はスキル化候補を承認し、スキル設計書を作成
 
 ### 7. ご主人様お伺いルール【最重要】
