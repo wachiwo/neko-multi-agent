@@ -1,0 +1,191 @@
+# ============================================================
+# Language-Specific Review Criteria
+# ============================================================
+# Centralized review checklists for cross-review and kashira review.
+# To add a new language: copy an existing language block and customize.
+#
+# Usage:
+#   - kashira embeds the relevant checklist into review task YAML
+#   - Workers (reviewers) follow base + language-specific checks
+#   - File extension mapping determines which language block to use
+
+# File Extension → Language Key Mapping
+extension_map:
+  ".html": html_css
+  ".htm": html_css
+  ".css": html_css
+  ".php": php
+  ".cs": csharp
+  ".scss": scss
+  ".sass": scss
+  ".cpp": cpp
+  ".cc": cpp
+  ".cxx": cpp
+  ".h": cpp
+  ".hpp": cpp
+  ".py": python
+  ".js": javascript
+  ".ts": typescript
+
+# Base Checklist (applies to ALL languages)
+base_checklist:
+  - id: B1
+    category: syntax
+    check: "No syntax errors; code compiles/runs without issues"
+  - id: B2
+    category: security
+    check: "No injection, XSS, credential leaks, or OWASP Top 10 risks"
+  - id: B3
+    category: performance
+    check: "No unnecessary loops, N+1 queries, or memory leak risks"
+  - id: B4
+    category: readability
+    check: "Variable/function names are clear; logic is easy to follow"
+  - id: B5
+    category: spec_compliance
+    check: "Deliverable satisfies the original instruction (objective)"
+
+# Language-Specific Extensions
+languages:
+  html_css:
+    display_name: "HTML / CSS"
+    checklist:
+      - id: HC1
+        category: accessibility
+        check: "Proper alt attributes, ARIA labels, semantic HTML elements"
+      - id: HC2
+        category: responsive
+        check: "Layout works on mobile/tablet/desktop breakpoints"
+      - id: HC3
+        category: cross_browser
+        check: "No vendor-prefix-only properties without fallbacks"
+      - id: HC4
+        category: validation
+        check: "Valid HTML structure (no unclosed tags, proper nesting)"
+
+  php:
+    display_name: "PHP"
+    checklist:
+      - id: PHP1
+        category: security
+        check: "Prepared statements for all DB queries (no string concatenation)"
+      - id: PHP2
+        category: security
+        check: "User input sanitized with htmlspecialchars() or equivalent"
+      - id: PHP3
+        category: error_handling
+        check: "Proper try-catch, no exposed error details to end users"
+      - id: PHP4
+        category: compatibility
+        check: "No deprecated functions; target PHP version compatibility confirmed"
+
+  csharp:
+    display_name: "C#"
+    checklist:
+      - id: CS1
+        category: null_safety
+        check: "Nullable reference types handled; no unguarded null dereferences"
+      - id: CS2
+        category: resource_management
+        check: "IDisposable objects properly disposed (using statement or try-finally)"
+      - id: CS3
+        category: async
+        check: "async/await used correctly; no fire-and-forget without reason"
+      - id: CS4
+        category: naming
+        check: "PascalCase for public members, camelCase for locals per .NET conventions"
+      - id: CS5
+        category: linq
+        check: "LINQ queries are readable; no excessive chaining that hurts clarity"
+      - id: CS6
+        category: exception
+        check: "Specific exception types caught (not bare catch); no swallowed exceptions"
+
+  scss:
+    display_name: "SCSS / Sass"
+    checklist:
+      - id: SC1
+        category: nesting
+        check: "Nesting depth ≤ 3 levels (avoid over-specificity)"
+      - id: SC2
+        category: variables
+        check: "Colors, fonts, and breakpoints use variables (no magic values)"
+      - id: SC3
+        category: structure
+        check: "Partials organized logically; no circular @import/@use dependencies"
+
+  cpp:
+    display_name: "C / C++"
+    checklist:
+      - id: CPP1
+        category: memory
+        check: "No memory leaks; every new/malloc has matching delete/free or smart pointer"
+      - id: CPP2
+        category: bounds
+        check: "Array/buffer bounds checked; no out-of-bounds access risk"
+      - id: CPP3
+        category: initialization
+        check: "All variables initialized before use"
+      - id: CPP4
+        category: undefined_behavior
+        check: "No reliance on undefined behavior (signed overflow, dangling pointers, etc.)"
+
+  python:
+    display_name: "Python"
+    checklist:
+      - id: PY1
+        category: typing
+        check: "Type hints used for function signatures"
+      - id: PY2
+        category: imports
+        check: "No wildcard imports; imports organized (stdlib, third-party, local)"
+      - id: PY3
+        category: exceptions
+        check: "Specific exceptions caught (not bare except)"
+      - id: PY4
+        category: style
+        check: "PEP 8 compliant (naming, spacing, line length)"
+
+  javascript:
+    display_name: "JavaScript"
+    checklist:
+      - id: JS1
+        category: strict_mode
+        check: "No implicit globals; 'use strict' or ES modules used"
+      - id: JS2
+        category: async
+        check: "Promises properly handled; no unhandled rejections or callback hell"
+      - id: JS3
+        category: equality
+        check: "Strict equality (===) used instead of loose equality (==)"
+      - id: JS4
+        category: dom
+        check: "DOM manipulation is safe; no innerHTML with unsanitized user input"
+
+  typescript:
+    display_name: "TypeScript"
+    checklist:
+      - id: TS1
+        category: typing
+        check: "No 'any' type without justification; proper type definitions used"
+      - id: TS2
+        category: null_safety
+        check: "Strict null checks; optional chaining (?.) and nullish coalescing (??) used appropriately"
+      - id: TS3
+        category: async
+        check: "Promises properly typed; no unhandled rejections"
+      - id: TS4
+        category: interfaces
+        check: "Interfaces/types defined for data structures; no implicit object shapes"
+
+  # --- Extension Guide ---
+  # To add a new language, add a block here following the pattern above,
+  # then add the file extension mapping to extension_map at the top.
+  # Example for Go:
+  #
+  # go:
+  #   display_name: "Go"
+  #   checklist:
+  #     - id: GO1
+  #       category: error_handling
+  #       check: "All errors checked; no ignored error returns"

@@ -192,7 +192,7 @@ tmux attach-session -t oyabun
 ブラウザやエディタで確認する。または:
 
 ```bash
-cat ~/neko-multi-agent/dashboard.md
+cat ./dashboard.md
 ```
 
 ### にゃんボードの構成
@@ -317,11 +317,11 @@ grep "alias cs" ~/.bashrc
 
 ```bash
 # 前回セッションのバックアップ
-ls ~/neko-multi-agent/logs/
+ls ./logs/
 
 # キューファイル（タスク・報告）
-ls ~/neko-multi-agent/queue/tasks/
-ls ~/neko-multi-agent/queue/reports/
+ls ./queue/tasks/
+ls ./queue/reports/
 ```
 
 ### WSLが重い・固まった

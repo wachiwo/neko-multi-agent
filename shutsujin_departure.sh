@@ -182,6 +182,13 @@ log_info "前回の記録をお片付け中にゃ..."
 # queue ディレクトリが存在しない場合は作成
 [ -d ./queue/reports ] || mkdir -p ./queue/reports
 [ -d ./queue/tasks ] || mkdir -p ./queue/tasks
+[ -d ./queue/inbox ] || mkdir -p ./queue/inbox
+
+# inbox ファイル初期化（各エージェント用）
+for agent in kashira worker1 worker2 worker3 worker4; do
+    : > "./queue/inbox/${agent}.queue"
+done
+log_info "  └─ inbox 初期化完了にゃ"
 
 # 作業猫(犬)タスクファイルリセット
 WORKER_NAMES=("1号猫" "2号犬" "3号猫" "4号猫")
@@ -383,29 +390,45 @@ if [ "$SETUP_ONLY" = false ]; then
 
     log_neko "全員に Claude Code を召喚中にゃ..."
 
-    # 親分猫
-    tmux send-keys -t oyabun "MAX_THINKING_TOKENS=0 claude --model opus --dangerously-skip-permissions"
+    # ═══════════════════════════════════════════════════════════════════════════
+    # 起動方式: CLIの引数にプロンプトを直接渡す
+    # ═══════════════════════════════════════════════════════════════════════════
+    # SessionStart hook (detect-persona.sh) が additionalContext として指示書を注入。
+    # CLI引数の prompt で最初の指示を同時に渡すことで、
+    # プロンプト（❯）検出のポーリングが不要になる。
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # 全エージェント一括起動（並列起動）
+    # ═══════════════════════════════════════════════════════════════════════════
+    # 各ペインは独立しているため、sleep なしで一括起動する。
+
+    # 親分猫（Opusモデル指定）
+    OYABUN_PROMPT="Read instructions/oyabun.md and understand your role. You are oyabun."
+    tmux send-keys -t oyabun "MAX_THINKING_TOKENS=0 claude --model opus --dangerously-skip-permissions \"${OYABUN_PROMPT}\""
     tmux send-keys -t oyabun Enter
     log_info "  └─ 親分猫、召喚完了にゃ"
 
-    # 少し待機（安定のため）
-    sleep 1
+    # 頭猫
+    KASHIRA_PROMPT="IMPORTANT: You are in pane multiagent:0.0. This means you are kashira (head cat). Read ONLY instructions/kashira.md - that is YOUR instruction file. Display idle cat art after understanding."
+    tmux send-keys -t "multiagent:0.0" "claude --dangerously-skip-permissions \"${KASHIRA_PROMPT}\""
+    tmux send-keys -t "multiagent:0.0" Enter
+    log_info "  └─ 頭猫、召喚完了にゃ"
 
-    # 頭猫 + 作業猫(犬)（5ペイン）
-    for i in {0..4}; do
-        tmux send-keys -t "multiagent:0.$i" "claude --dangerously-skip-permissions"
+    # 作業猫(犬)（1-4、それぞれ個別の指示書 — 一括起動）
+    WORKER_INSTRUCTIONS=("instructions/1gou-neko.md" "instructions/2gou-inu.md" "instructions/3gou-neko.md" "instructions/4gou-neko.md")
+    WORKER_LABELS=("1号猫" "2号犬" "3号猫" "4号猫")
+
+    for i in {1..4}; do
+        WORKER_PROMPT="IMPORTANT: You are in pane multiagent:0.$i. This means you are worker$i (${WORKER_LABELS[$((i-1))]}). Read ONLY ${WORKER_INSTRUCTIONS[$((i-1))]} - that is YOUR instruction file. Ignore any other worker identity from CLAUDE.md. Display idle cat art after understanding."
+        tmux send-keys -t "multiagent:0.$i" "claude --dangerously-skip-permissions \"${WORKER_PROMPT}\""
         tmux send-keys -t "multiagent:0.$i" Enter
-        sleep 1
     done
-    log_info "  └─ 頭猫・作業猫(犬)、召喚完了にゃ"
+    log_info "  └─ 作業猫(犬)、召喚完了にゃ"
+
+    # 全エージェントの起動待ち（一括）
+    sleep 3
 
     log_success "全員 Claude Code 起動完了にゃ！"
-    echo ""
-
-    # ═══════════════════════════════════════════════════════════════════════════
-    # STEP 6.5: 各エージェントに指示書を読み込ませる
-    # ═══════════════════════════════════════════════════════════════════════════
-    log_neko "各エージェントに指示書を配布中にゃ..."
     echo ""
 
     # ═══════════════════════════════════════════════════════════════════════════
@@ -427,47 +450,6 @@ if [ "$SETUP_ONLY" = false ]; then
 NEKO_DEPART_EOF
 
     echo -e "                         \033[1;35m「 おでかけにゃ〜！がんばるにゃ！ 」\033[0m"
-    echo ""
-
-    echo "  Claude Code の起動を待機中（最大30秒）..."
-
-    # 親分猫の起動を確認（最大30秒待機）
-    for i in {1..30}; do
-        if tmux capture-pane -t oyabun -p | grep -q "bypass permissions"; then
-            echo "  └─ 親分猫の Claude Code 起動確認完了（${i}秒）"
-            break
-        fi
-        sleep 1
-    done
-
-    # 親分猫に指示書を読み込ませる
-    log_info "  └─ 親分猫に指示書を伝達中にゃ..."
-    tmux send-keys -t oyabun "instructions/oyabun.md を読んで役割を理解するにゃ。"
-    sleep 0.5
-    tmux send-keys -t oyabun Enter
-
-    # 頭猫に指示書を読み込ませる
-    sleep 2
-    log_info "  └─ 頭猫に指示書を伝達中にゃ..."
-    tmux send-keys -t "multiagent:0.0" "instructions/kashira.md を読んで役割を理解するにゃ。"
-    sleep 0.5
-    tmux send-keys -t "multiagent:0.0" Enter
-
-    # 作業猫(犬)に指示書を読み込ませる（1-4、それぞれ個別の指示書）
-    sleep 2
-    log_info "  └─ 作業猫(犬)に指示書を伝達中にゃ..."
-
-    WORKER_INSTRUCTIONS=("instructions/1gou-neko.md" "instructions/2gou-inu.md" "instructions/3gou-neko.md" "instructions/4gou-neko.md")
-    WORKER_LABELS=("1号猫" "2号犬" "3号猫" "4号猫")
-
-    for i in {1..4}; do
-        tmux send-keys -t "multiagent:0.$i" "${WORKER_INSTRUCTIONS[$((i-1))]} を読んで役割を理解するにゃ。おまえは${WORKER_LABELS[$((i-1))]}にゃ。"
-        sleep 0.3
-        tmux send-keys -t "multiagent:0.$i" Enter
-        sleep 0.5
-    done
-
-    log_success "全員に指示書伝達完了にゃ！"
     echo ""
 fi
 
