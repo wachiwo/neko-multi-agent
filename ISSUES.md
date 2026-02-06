@@ -48,7 +48,7 @@ queue/inbox/
 - .pending_*フラグ: メッセージ内容が残らない。inbox案に統合
 - inotifywait全面刷新: WSL2の `/mnt/c/` でinotifyが動かない。将来的には有力だがまず inbox で安全ネットを張る
 
-**変更ファイル**: 全instruction files（inbox sweep追加）、shutsujin_departure.sh（inbox初期化）
+**変更ファイル**: 全instruction files（inbox sweep追加）、osanpo.sh（inbox初期化）
 
 ---
 
@@ -128,7 +128,7 @@ done
 sleep 3  # 一括で待機
 ```
 
-**変更ファイル**: shutsujin_departure.sh
+**変更ファイル**: osanpo.sh
 
 ---
 

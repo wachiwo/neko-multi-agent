@@ -116,10 +116,10 @@ cd /mnt/c/tools/neko-multi-agent
 </td>
 <td>
 
-**出陣！**
+**おさんぽ！**
 
 ```bash
-./shutsujin_departure.sh
+./osanpo.sh
 ```
 
 </td>
@@ -132,7 +132,7 @@ cd /mnt/c/tools/neko-multi-agent
 
 ```bash
 cd /mnt/c/tools/neko-multi-agent
-./shutsujin_departure.sh
+./osanpo.sh
 ```
 
 ---
@@ -158,7 +158,7 @@ chmod +x *.sh
 
 ```bash
 cd ~/neko-multi-agent
-./shutsujin_departure.sh
+./osanpo.sh
 ```
 
 </details>
@@ -197,14 +197,14 @@ wsl --install
 |-----------|------|---------------|
 | `install.bat` | Windows: WSL2 + Ubuntu のセットアップ | 初回のみ |
 | `first_setup.sh` | tmux、Node.js、Claude Code CLI をインストール + Memory MCP設定 | 初回のみ |
-| `shutsujin_departure.sh` | tmuxセッション作成 + Claude Code起動 + 指示書読み込み | 毎日 |
+| `osanpo.sh` | tmuxセッション作成 + Claude Code起動 + 指示書読み込み | 毎日 |
 
 ### `install.bat` が自動で行うこと：
 - WSL2がインストールされているかチェック（未インストールなら案内）
 - Ubuntuがインストールされているかチェック（未インストールなら案内）
 - 次のステップ（`first_setup.sh` の実行方法）を案内
 
-### `shutsujin_departure.sh` が行うこと：
+### `osanpo.sh` が行うこと：
 - tmuxセッションを作成（oyabun + multiagent）
 - 全エージェントでClaude Codeを起動
 - 各エージェントに指示書を自動読み込み
@@ -252,7 +252,7 @@ tmuxセッションが作成されます：
 
 ### Step 1: 親分猫に接続
 
-`shutsujin_departure.sh` 実行後、全エージェントが自動的に指示書を読み込み、作業準備完了となります。
+`osanpo.sh` 実行後、全エージェントが自動的に指示書を読み込み、作業準備完了となります。
 
 新しいターミナルを開いて親分猫に接続：
 
@@ -519,7 +519,7 @@ language: en   # 猫語 + 英訳併記
 |                      毎日の起動（毎日実行）                           |
 +---------------------------------------------------------------------+
 |                                                                     |
-|  shutsujin_departure.sh                                             |
+|  osanpo.sh                                             |
 |      |                                                              |
 |      +-> tmuxセッションを作成                                       |
 |      |         - "oyabun"セッション（1ペイン）                       |
@@ -535,20 +535,20 @@ language: en   # 猫語 + 英訳併記
 </details>
 
 <details>
-<summary><b>shutsujin_departure.sh オプション</b>（クリックで展開）</summary>
+<summary><b>osanpo.sh オプション</b>（クリックで展開）</summary>
 
 ```bash
 # デフォルト: フル起動（tmuxセッション + Claude Code起動）
-./shutsujin_departure.sh
+./osanpo.sh
 
 # セッションセットアップのみ（Claude Code起動なし）
-./shutsujin_departure.sh -s
+./osanpo.sh -s
 
 # フル起動 + Windows Terminalタブを開く
-./shutsujin_departure.sh -t
+./osanpo.sh -t
 
 # ヘルプを表示
-./shutsujin_departure.sh -h
+./osanpo.sh -h
 ```
 
 </details>
@@ -558,13 +558,13 @@ language: en   # 猫語 + 英訳併記
 
 **通常の毎日の使用：**
 ```bash
-./shutsujin_departure.sh          # 全て起動
+./osanpo.sh          # 全て起動
 tmux attach-session -t oyabun     # 接続してコマンドを出す
 ```
 
 **デバッグモード（手動制御）：**
 ```bash
-./shutsujin_departure.sh -s       # セッションのみ作成
+./osanpo.sh -s       # セッションのみ作成
 
 # 特定のエージェントでClaude Codeを手動起動
 tmux send-keys -t oyabun:0 'claude --dangerously-skip-permissions' Enter
@@ -578,7 +578,7 @@ tmux kill-session -t oyabun
 tmux kill-session -t multiagent
 
 # 新しく起動
-./shutsujin_departure.sh
+./osanpo.sh
 ```
 
 </details>
@@ -589,7 +589,7 @@ tmux kill-session -t multiagent
 `first_setup.sh` を実行すると、以下のエイリアスが `~/.bashrc` に自動追加されます：
 
 ```bash
-alias css='cd ~/neko-multi-agent && ./shutsujin_departure.sh'  # 移動+出陣
+alias css='cd ~/neko-multi-agent && ./osanpo.sh'  # 移動+おさんぽ
 alias csm='cd ~/neko-multi-agent'                              # ディレクトリ移動のみ
 ```
 
@@ -610,7 +610,7 @@ neko-multi-agent/
 |  +------------------- セットアップスクリプト -------------------+
 +-- install.bat               # Windows: 初回セットアップ
 +-- first_setup.sh            # Ubuntu/Mac: 初回セットアップ
-+-- shutsujin_departure.sh    # 毎日の起動（指示書自動読み込み）
++-- osanpo.sh    # 毎日の起動（指示書自動読み込み）
 |  +-------------------------------------------------------------+
 |
 +-- instructions/             # エージェント指示書

@@ -566,7 +566,7 @@ Even after compaction or restart, reading task.md allows immediate situation awa
 | Target reader | Master (human) | Kashira (handover) |
 | Content | Summary of action-required/in-progress/results | Detailed history of all cmds and subtasks |
 | Updater | Kashira | Kashira |
-| Reset | Initialized by startup script (shutsujin_departure.sh) | Never reset (cumulative) |
+| Reset | Initialized by startup script (osanpo.sh) | Never reset (cumulative) |
 
 ## Master Inquiry Rule [Most Important]
 

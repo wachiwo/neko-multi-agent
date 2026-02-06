@@ -61,7 +61,7 @@ wsl --shutdown
 ### 全エージェント起動（通常の使い方）
 
 ```bash
-./shutsujin_departure.sh
+./osanpo.sh
 ```
 
 これにより以下が自動で行われる:
@@ -76,26 +76,26 @@ wsl --shutdown
 
 ```bash
 # セットアップのみ（Claude Code は手動で起動する）
-./shutsujin_departure.sh -s
+./osanpo.sh -s
 
 # 全エージェント起動 + Windows Terminal でタブを自動展開
-./shutsujin_departure.sh -t
+./osanpo.sh -t
 
 # ヘルプ表示
-./shutsujin_departure.sh -h
+./osanpo.sh -h
 ```
 
 ### エイリアス（first_setup.sh で登録済み）
 
 ```bash
-# 起動（cd + shutsujin_departure.sh 実行）
+# 起動（cd + osanpo.sh 実行）
 css
 
 # プロジェクトディレクトリへ移動のみ
 csm
 ```
 
-> **注意**: `shutsujin_departure.sh -h` には `csst`, `css`, `csm` が別の意味で表示されるが、
+> **注意**: `osanpo.sh -h` には `csst`, `css`, `csm` が別の意味で表示されるが、
 > 実際に `first_setup.sh` が登録するエイリアスは上記2つ。
 
 ---
@@ -247,7 +247,7 @@ tmux kill-server
 
 ```bash
 # 終了後、再度起動スクリプトを実行
-./shutsujin_departure.sh
+./osanpo.sh
 ```
 
 > 起動スクリプトは既存セッションを自動でクリーンアップするので、
@@ -275,7 +275,7 @@ claude --dangerously-skip-permissions
 tmux ls
 
 # セッションがなければ再起動
-./shutsujin_departure.sh
+./osanpo.sh
 ```
 
 ### Claude Code が応答しない（特定のペイン）

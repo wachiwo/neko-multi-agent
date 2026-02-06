@@ -50,7 +50,7 @@ HAS_ERROR=false
 
 echo ""
 echo "  ╔══════════════════════════════════════════════════════════════╗"
-echo "  ║  🏯 multi-agent-shogun インストーラー                         ║"
+echo "  ║  =^._.^= neko-multi-agent インストーラー                       ║"
 echo "  ║     Initial Setup Script for Ubuntu / WSL                    ║"
 echo "  ╚══════════════════════════════════════════════════════════════╝"
 echo ""
@@ -302,11 +302,13 @@ log_step "STEP 5: ディレクトリ構造作成"
 DIRECTORIES=(
     "queue/tasks"
     "queue/reports"
+    "queue/inbox"
+    "queue/plans"
     "config"
     "status"
     "instructions"
     "logs"
-    "demo_output"
+    "outputs"
     "skills"
     "memory"
 )
@@ -342,23 +344,19 @@ log_step "STEP 6: 設定ファイル確認"
 if [ ! -f "$SCRIPT_DIR/config/settings.yaml" ]; then
     log_info "config/settings.yaml を作成中..."
     cat > "$SCRIPT_DIR/config/settings.yaml" << EOF
-# multi-agent-shogun 設定ファイル
+# neko-multi-agent settings
 
-# 言語設定
-# ja: 日本語（戦国風日本語のみ、併記なし）
-# en: 英語（戦国風日本語 + 英訳併記）
-# その他の言語コード（es, zh, ko, fr, de 等）も対応
+# Language setting
+# ja: Cat-style Japanese only (no bilingual)
+# en/es/zh/ko/fr/de etc.: Cat-style Japanese + translation
 language: ja
 
-# スキル設定
+# Skill settings
 skill:
-  # スキル保存先（スキル名に shogun- プレフィックスを付けて保存）
   save_path: "~/.claude/skills/"
-
-  # ローカルスキル保存先（このプロジェクト専用）
   local_path: "$SCRIPT_DIR/skills/"
 
-# ログ設定
+# Logging
 logging:
   level: info  # debug | info | warn | error
   path: "$SCRIPT_DIR/logs/"
@@ -386,6 +384,83 @@ else
     log_info "config/projects.yaml は既に存在します"
 fi
 
+# memory/global_context.md
+if [ ! -f "$SCRIPT_DIR/memory/global_context.md" ]; then
+    log_info "memory/global_context.md を作成中..."
+    cat > "$SCRIPT_DIR/memory/global_context.md" << 'EOF'
+# Global Context
+Last updated: -
+
+## Master's Preferences
+- Prefer simple, minimal solutions. No over-engineering.
+- No unnecessary comments or docstrings in code.
+- Internal communication in English (token optimization).
+- dashboard.md and user-facing output in Japanese.
+
+## Quality Standards
+- Code must be production-quality regardless of cat persona.
+- Never mix cat-speak ("nya") into code, documents, or output files.
+- Cross-review is REQUIRED by default.
+- Language-specific review checklists are in config/review_criteria.yaml.
+
+## Project Conventions
+- All output files go to outputs/ directory.
+- Each worker writes to its own files only (RACE-001).
+- Timestamps always retrieved via date command, never guessed.
+- Reports must always include skill_candidate field.
+
+## System Notes
+- 6 agents: oyabun (Opus), kashira + 4 workers (default model).
+- Token optimization: instructions and internal YAML in English.
+- dashboard.md is the single source of truth for the master.
+EOF
+    log_success "global_context.md を作成しました"
+else
+    log_info "memory/global_context.md は既に存在します"
+fi
+
+# memory/patterns.yaml
+if [ ! -f "$SCRIPT_DIR/memory/patterns.yaml" ]; then
+    echo "patterns: []" > "$SCRIPT_DIR/memory/patterns.yaml"
+    log_success "patterns.yaml を作成しました"
+fi
+
+# status/agent_status.yaml
+if [ ! -f "$SCRIPT_DIR/status/agent_status.yaml" ]; then
+    log_info "status/agent_status.yaml を作成中..."
+    cat > "$SCRIPT_DIR/status/agent_status.yaml" << 'EOF'
+agents:
+  kashira:
+    status: idle
+    current_task: null
+    completed_today: 0
+    errors: 0
+  worker1:
+    status: idle
+    current_task: null
+    completed_today: 0
+    errors: 0
+  worker2:
+    status: idle
+    current_task: null
+    completed_today: 0
+    errors: 0
+  worker3:
+    status: idle
+    current_task: null
+    completed_today: 0
+    errors: 0
+  worker4:
+    status: idle
+    current_task: null
+    completed_today: 0
+    errors: 0
+EOF
+    log_success "agent_status.yaml を作成しました"
+else
+    log_info "status/agent_status.yaml は既に存在します"
+fi
+
 RESULTS+=("設定ファイル: OK")
 
 # ============================================================
@@ -393,12 +468,13 @@ RESULTS+=("設定ファイル: OK")
 # ============================================================
 log_step "STEP 7: キューファイル初期化"
 
-# 足軽用タスクファイル作成
-for i in {1..8}; do
-    TASK_FILE="$SCRIPT_DIR/queue/tasks/ashigaru${i}.yaml"
+# ワーカー用タスクファイル作成
+WORKER_NAMES=("1号猫" "2号犬" "3号猫" "4号猫")
+for i in {1..4}; do
+    TASK_FILE="$SCRIPT_DIR/queue/tasks/worker${i}.yaml"
     if [ ! -f "$TASK_FILE" ]; then
         cat > "$TASK_FILE" << EOF
-# 足軽${i}専用タスクファイル
+# ${WORKER_NAMES[$((i-1))]}専用タスクファイル
 task:
   task_id: null
   parent_cmd: null
@@ -409,14 +485,14 @@ task:
 EOF
     fi
 done
-log_info "足軽タスクファイル (1-8) を確認/作成しました"
+log_info "ワーカータスクファイル (1-4) を確認/作成しました"
 
-# 足軽用レポートファイル作成
-for i in {1..8}; do
-    REPORT_FILE="$SCRIPT_DIR/queue/reports/ashigaru${i}_report.yaml"
+# ワーカー用レポートファイル作成
+for i in {1..4}; do
+    REPORT_FILE="$SCRIPT_DIR/queue/reports/worker${i}_report.yaml"
     if [ ! -f "$REPORT_FILE" ]; then
         cat > "$REPORT_FILE" << EOF
-worker_id: ashigaru${i}
+worker_id: worker${i}
 task_id: null
 timestamp: ""
 status: idle
@@ -424,7 +500,23 @@ result: null
 EOF
     fi
 done
-log_info "足軽レポートファイル (1-8) を確認/作成しました"
+log_info "ワーカーレポートファイル (1-4) を確認/作成しました"
+
+# inbox ファイル作成
+mkdir -p "$SCRIPT_DIR/queue/inbox"
+for agent in kashira worker1 worker2 worker3 worker4; do
+    INBOX_FILE="$SCRIPT_DIR/queue/inbox/${agent}.queue"
+    if [ ! -f "$INBOX_FILE" ]; then
+        touch "$INBOX_FILE"
+    fi
+done
+log_info "inbox ファイルを確認/作成しました"
+
+# oyabun_to_kashira.yaml 作成
+if [ ! -f "$SCRIPT_DIR/queue/oyabun_to_kashira.yaml" ]; then
+    echo "queue: []" > "$SCRIPT_DIR/queue/oyabun_to_kashira.yaml"
+fi
+log_info "コマンドキューを確認/作成しました"
 
 RESULTS+=("キューファイル: OK")
 
@@ -435,7 +527,7 @@ log_step "STEP 8: 実行権限設定"
 
 SCRIPTS=(
     "setup.sh"
-    "shutsujin_departure.sh"
+    "osanpo.sh"
     "first_setup.sh"
 )
 
@@ -459,15 +551,15 @@ BASHRC_FILE="$HOME/.bashrc"
 # aliasが既に存在するかチェックし、なければ追加
 ALIAS_ADDED=false
 
-# css alias (出陣コマンド)
+# css alias (おさんぽコマンド)
 if [ -f "$BASHRC_FILE" ]; then
-    EXPECTED_CSS="alias css='cd \"$SCRIPT_DIR\" && ./shutsujin_departure.sh'"
+    EXPECTED_CSS="alias css='cd \"$SCRIPT_DIR\" && ./osanpo.sh'"
     if ! grep -q "alias css=" "$BASHRC_FILE" 2>/dev/null; then
         # alias が存在しない → 新規追加
         echo "" >> "$BASHRC_FILE"
-        echo "# multi-agent-shogun aliases (added by first_setup.sh)" >> "$BASHRC_FILE"
+        echo "# neko-multi-agent aliases (added by first_setup.sh)" >> "$BASHRC_FILE"
         echo "$EXPECTED_CSS" >> "$BASHRC_FILE"
-        log_info "alias css を追加しました（出陣コマンド）"
+        log_info "alias css を追加しました（おさんぽコマンド）"
         ALIAS_ADDED=true
     elif ! grep -qF "$EXPECTED_CSS" "$BASHRC_FILE" 2>/dev/null; then
         # alias は存在するがパスが異なる → 更新
@@ -486,7 +578,7 @@ if [ -f "$BASHRC_FILE" ]; then
     if ! grep -q "alias csm=" "$BASHRC_FILE" 2>/dev/null; then
         if [ "$ALIAS_ADDED" = false ]; then
             echo "" >> "$BASHRC_FILE"
-            echo "# multi-agent-shogun aliases (added by first_setup.sh)" >> "$BASHRC_FILE"
+            echo "# neko-multi-agent aliases (added by first_setup.sh)" >> "$BASHRC_FILE"
         fi
         echo "$EXPECTED_CSM" >> "$BASHRC_FILE"
         log_info "alias csm を追加しました（ディレクトリ移動）"
@@ -528,7 +620,7 @@ if command -v claude &> /dev/null; then
     else
         log_info "Memory MCP を設定中..."
         if claude mcp add memory \
-            -e MEMORY_FILE_PATH="$SCRIPT_DIR/memory/shogun_memory.jsonl" \
+            -e MEMORY_FILE_PATH="$SCRIPT_DIR/memory/oyabun_memory.jsonl" \
             -- npx -y @modelcontextprotocol/server-memory 2>/dev/null; then
             log_success "Memory MCP 設定完了"
             RESULTS+=("Memory MCP: 設定完了")
@@ -572,7 +664,7 @@ if [ "$HAS_ERROR" = true ]; then
     echo "  すべての依存関係が揃ったら、再度このスクリプトを実行して確認できます。"
 else
     echo "  ╔══════════════════════════════════════════════════════════════╗"
-    echo "  ║  ✅ セットアップ完了！準備万端でござる！                      ║"
+    echo "  ║  ✅ セットアップ完了にゃ！準備万端にゃ！                      ║"
     echo "  ╚══════════════════════════════════════════════════════════════╝"
 fi
 
@@ -581,17 +673,17 @@ echo "  ┌───────────────────────
 echo "  │  📜 次のステップ                                             │"
 echo "  └──────────────────────────────────────────────────────────────┘"
 echo ""
-echo "  出陣（全エージェント起動）:"
-echo "     ./shutsujin_departure.sh"
+echo "  おさんぽ（全エージェント起動）:"
+echo "     ./osanpo.sh"
 echo ""
 echo "  オプション:"
-echo "     ./shutsujin_departure.sh -s   # セットアップのみ（Claude手動起動）"
-echo "     ./shutsujin_departure.sh -t   # Windows Terminalタブ展開"
+echo "     ./osanpo.sh -s   # セットアップのみ（Claude手動起動）"
+echo "     ./osanpo.sh -t   # Windows Terminalタブ展開"
 echo ""
 echo "  詳細は README.md を参照してください。"
 echo ""
 echo "  ════════════════════════════════════════════════════════════════"
-echo "   天下布武！ (Tenka Fubu!)"
+echo "   =^._.^= にゃ〜！準備完了にゃ！"
 echo "  ════════════════════════════════════════════════════════════════"
 echo ""
 
