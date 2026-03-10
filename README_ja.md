@@ -615,7 +615,8 @@ neko-multi-agent/
 |
 +-- instructions/             # エージェント指示書
 |   +-- oyabun.md             # 親分猫の指示書
-|   +-- kashira.md            # 頭猫の指示書
+|   +-- kashira_core.md       # 頭猫の指示書（コア）
+|   +-- kashira_policies.md  # 頭猫の指示書（ポリシー）
 |   +-- 1gou-neko.md          # 1号猫の指示書
 |   +-- 2gou-inu.md           # 2号犬の指示書
 |   +-- 3gou-neko.md          # 3号猫の指示書

@@ -18,10 +18,7 @@ demo_output/
 test_output/
 
 # Queue files (runtime state, contains task history)
-queue/*.yaml
-queue/tasks/
-queue/reports/
-queue/research/
+queue/
 
 # Config files (generated per installation)
 config/projects.yaml
@@ -37,6 +34,12 @@ skills/*
 
 # Legacy files
 claude-shogun-orders.md
+
+# Binary packages (WSL workaround, keep on disk but not in git)
+*.deb
+
+# User workspace files (oyabun personal tracking)
+goshujinsama_*.md
 
 # Temporary files
 *.tmp

@@ -116,13 +116,21 @@ show_neko_banner() {
                       /|     |\
                      (_|     |_)
 
-       /\_/\      /\_/\      /\_/\      /\_/\
+       /\_/\      /\_/\      /\_/\      /\_/\         【Sonnet】
       ( o.o )    ( o.o )    ( >.< )    ( -.- )
        > ^ <      > ^ <      > ^ <      > ^ <
       /|   |\    /|   |\    /|   |\    /|   |\
      (_|   |_)  (_|   |_)  (_|   |_)  (_|   |_)
      [1号猫]    [2号犬]    [3号猫]    [4号猫]
       真面目    にゃわん    のんびり    クール
+
+                       /\_/\                          【Haiku】
+                      ( >w< )
+                       > ^ <
+                      /|   |\
+                     (_|   |_)
+                     [5号猫]
+                      元気
 
 NEKO_EOF
 
@@ -135,7 +143,7 @@ NEKO_EOF
     echo -e "\033[1;33m  ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\033[0m"
     echo -e "\033[1;33m  ┃\033[0m  \033[1;37m=^._.^= neko-multi-agent\033[0m  〜 \033[1;36mねこマルチエージェントシステム\033[0m 〜              \033[1;33m┃\033[0m"
     echo -e "\033[1;33m  ┃\033[0m                                                                           \033[1;33m┃\033[0m"
-    echo -e "\033[1;33m  ┃\033[0m    \033[1;35m親分猫\033[0m: プロジェクト統括    \033[1;31m頭猫\033[0m: タスク管理    \033[1;34m作業猫(犬)\033[0m: 実働×4    \033[1;33m┃\033[0m"
+    echo -e "\033[1;33m  ┃\033[0m  \033[1;35m親分猫\033[0m: 統括  \033[1;31m頭猫\033[0m: 管理  \033[1;34mSonnet\033[0m: 実働×4  \033[1;36mHaiku\033[0m: 実働×1     \033[1;33m┃\033[0m"
     echo -e "\033[1;33m  ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\033[0m"
     echo ""
 }
@@ -183,16 +191,17 @@ log_info "前回の記録をお片付け中にゃ..."
 [ -d ./queue/reports ] || mkdir -p ./queue/reports
 [ -d ./queue/tasks ] || mkdir -p ./queue/tasks
 [ -d ./queue/inbox ] || mkdir -p ./queue/inbox
+[ -d ./queue/voice ] || mkdir -p ./queue/voice
 
 # inbox ファイル初期化（各エージェント用）
-for agent in kashira worker1 worker2 worker3 worker4; do
+for agent in kashira worker1 worker2 worker3 worker4 worker5; do
     : > "./queue/inbox/${agent}.queue"
 done
 log_info "  └─ inbox 初期化完了にゃ"
 
 # 作業猫(犬)タスクファイルリセット
-WORKER_NAMES=("1号猫" "2号犬" "3号猫" "4号猫")
-for i in {1..4}; do
+WORKER_NAMES=("1号猫" "2号犬" "3号猫" "4号猫" "5号猫")
+for i in {1..5}; do
     cat > ./queue/tasks/worker${i}.yaml << EOF
 # ${WORKER_NAMES[$((i-1))]}専用タスクファイル
 task:
@@ -206,7 +215,7 @@ EOF
 done
 
 # 作業猫(犬)レポートファイルリセット
-for i in {1..4}; do
+for i in {1..5}; do
     cat > ./queue/reports/worker${i}_report.yaml << EOF
 worker_id: worker${i}
 task_id: null
@@ -308,7 +317,7 @@ if ! command -v tmux &> /dev/null; then
     exit 1
 fi
 
-log_neko "頭猫・作業猫(犬)のお部屋を準備中にゃ（5名配備）..."
+log_neko "頭猫・作業猫(犬)のお部屋を準備中にゃ（6名配備）..."
 
 # 最初のペイン作成
 if ! tmux new-session -d -s multiagent -n "agents" 2>/dev/null; then
@@ -327,23 +336,51 @@ if ! tmux new-session -d -s multiagent -n "agents" 2>/dev/null; then
     exit 1
 fi
 
-# 1x5グリッド作成（横一列に5ペイン: kashira + worker1-4）
+# 1x6グリッド作成（横一列に6ペイン: kashira + worker1-4 + worker5）
 # 注意: split-window はフォーカスを新ペインに移すため、分割元ペインを明示指定する
 # new-session で Pane 0 が作成済み。以降は最後のペインを分割して右に追加。
-tmux split-window -h -t "multiagent:0.0"
-tmux select-layout -t "multiagent:0" even-horizontal
-tmux split-window -h -t "multiagent:0.1"
-tmux select-layout -t "multiagent:0" even-horizontal
-tmux split-window -h -t "multiagent:0.2"
-tmux select-layout -t "multiagent:0" even-horizontal
-tmux split-window -h -t "multiagent:0.3"
-tmux select-layout -t "multiagent:0" even-horizontal
+# OOM対策: 32GB RAM環境では8プロセスでメモリ枯渇するため6プロセスに制限
 
-# ペインタイトル設定（0: kashira, 1-4: worker1-4）
-PANE_TITLES=("kashira" "worker1" "worker2" "worker3" "worker4")
-PANE_COLORS=("1;31" "1;34" "1;33" "1;32" "1;36")  # kashira: 赤, worker1: 青, worker2: 黄, worker3: 緑, worker4: シアン
+# safe_split: split-window wrapper — logs warning and returns 1 on failure instead of killing script
+TARGET_PANES=6
 
-for i in {0..4}; do
+safe_split() {
+    local target_pane="$1"
+    local retries=3
+    for (( r=1; r<=retries; r++ )); do
+        if tmux split-window -h -t "$target_pane" 2>/dev/null; then
+            tmux select-layout -t "multiagent:0" even-horizontal
+            return 0
+        fi
+        sleep 1
+    done
+    log_info "  [WARN] split-window failed at $target_pane after $retries retries"
+    return 1
+}
+
+# Always attempt to create all 6 panes.
+# Claude Code runs fine at any pane width — no minimum width restriction needed.
+# safe_split handles tmux-level failures gracefully.
+DESIRED_PANES=$TARGET_PANES
+
+# Split loop: create panes up to DESIRED_PANES (pane 0 already exists from new-session)
+for (( p=1; p<DESIRED_PANES; p++ )); do
+    if ! safe_split "multiagent:0.$((p-1))"; then
+        log_info "  [WARN] Stopping splits at pane $p. Continuing with available panes."
+        break
+    fi
+done
+
+# Count actual panes (may be fewer than DESIRED_PANES if splits failed)
+ACTUAL_PANES=$(tmux list-panes -t "multiagent:0" 2>/dev/null | wc -l)
+MAX_PANE_IDX=$((ACTUAL_PANES - 1))
+log_info "  └─ ${ACTUAL_PANES} panes created (target was ${TARGET_PANES})"
+
+# ペインタイトル設定（0: kashira, 1-4: Sonnet workers, 5: Haiku worker）
+PANE_TITLES=("kashira" "worker1" "worker2" "worker3" "worker4" "worker5")
+PANE_COLORS=("1;31" "1;34" "1;33" "1;32" "1;36" "0;34")  # kashira: 赤, S1-4: 青黄緑シアン, H5: 暗青
+
+for (( i=0; i<=MAX_PANE_IDX; i++ )); do
     tmux select-pane -t "multiagent:0.$i" -T "${PANE_TITLES[$i]}"
     tmux send-keys -t "multiagent:0.$i" "cd \"$(pwd)\" && export PS1='(\[\033[${PANE_COLORS[$i]}m\]${PANE_TITLES[$i]}\[\033[0m\]) \[\033[1;32m\]\w\[\033[0m\]\$ ' && clear" Enter
 done
@@ -402,31 +439,54 @@ if [ "$SETUP_ONLY" = false ]; then
     # ═══════════════════════════════════════════════════════════════════════════
     # 各ペインは独立しているため、sleep なしで一括起動する。
 
-    # 親分猫（Opusモデル指定）
+    # Watchdog wrapper path
+    WATCHDOG="scripts/watchdog_wrapper.sh"
+
+    # 親分猫（Opusモデル指定 + watchdog自動再起動）
     OYABUN_PROMPT="Read instructions/oyabun.md and understand your role. You are oyabun."
-    tmux send-keys -t oyabun "MAX_THINKING_TOKENS=0 claude --model opus --dangerously-skip-permissions \"${OYABUN_PROMPT}\""
+    tmux send-keys -t oyabun "MAX_THINKING_TOKENS=0 CLAUDE_CODE_MAX_OUTPUT_TOKENS=64000 ${WATCHDOG} oyabun '--model opus --permission-mode bypassPermissions' \"${OYABUN_PROMPT}\""
     tmux send-keys -t oyabun Enter
     log_info "  └─ 親分猫、召喚完了にゃ"
 
-    # 頭猫
-    KASHIRA_PROMPT="IMPORTANT: You are in pane multiagent:0.0. This means you are kashira (head cat). Read ONLY instructions/kashira.md - that is YOUR instruction file. Display idle cat art after understanding."
-    tmux send-keys -t "multiagent:0.0" "claude --dangerously-skip-permissions \"${KASHIRA_PROMPT}\""
+    # 頭猫（watchdog自動再起動）
+    KASHIRA_PROMPT="IMPORTANT: You are in pane multiagent:0.0. This means you are kashira (head cat). Read ONLY instructions/kashira_core.md and instructions/kashira_policies.md - that is YOUR instruction file. Display idle cat art after understanding."
+    tmux send-keys -t "multiagent:0.0" "CLAUDE_CODE_MAX_OUTPUT_TOKENS=64000 ${WATCHDOG} kashira '--permission-mode bypassPermissions' \"${KASHIRA_PROMPT}\""
     tmux send-keys -t "multiagent:0.0" Enter
     log_info "  └─ 頭猫、召喚完了にゃ"
 
-    # 作業猫(犬)（1-4、それぞれ個別の指示書 — 一括起動）
+    # Sonnet作業猫(犬)（1-4、それぞれ個別の指示書 — 一括起動）
     WORKER_INSTRUCTIONS=("instructions/1gou-neko.md" "instructions/2gou-inu.md" "instructions/3gou-neko.md" "instructions/4gou-neko.md")
     WORKER_LABELS=("1号猫" "2号犬" "3号猫" "4号猫")
 
-    for i in {1..4}; do
+    # Sonnet workers: panes 1..min(4, MAX_PANE_IDX)
+    SONNET_MAX=$(( MAX_PANE_IDX < 4 ? MAX_PANE_IDX : 4 ))
+    for (( i=1; i<=SONNET_MAX; i++ )); do
         WORKER_PROMPT="IMPORTANT: You are in pane multiagent:0.$i. This means you are worker$i (${WORKER_LABELS[$((i-1))]}). Read ONLY ${WORKER_INSTRUCTIONS[$((i-1))]} - that is YOUR instruction file. Ignore any other worker identity from CLAUDE.md. Display idle cat art after understanding."
-        tmux send-keys -t "multiagent:0.$i" "claude --dangerously-skip-permissions \"${WORKER_PROMPT}\""
+        tmux send-keys -t "multiagent:0.$i" "CLAUDE_CODE_MAX_OUTPUT_TOKENS=64000 ${WATCHDOG} worker${i} '--permission-mode bypassPermissions' \"${WORKER_PROMPT}\""
         tmux send-keys -t "multiagent:0.$i" Enter
     done
-    log_info "  └─ 作業猫(犬)、召喚完了にゃ"
+    log_info "  └─ Sonnet作業猫(犬)×${SONNET_MAX}、召喚完了にゃ"
+
+    # Haiku作業猫（5のみ — OOM対策で1匹に制限）
+    # Guard: only start if pane 5 actually exists (may be absent if terminal was too narrow)
+    if tmux list-panes -t "multiagent:0" -F '#{pane_index}' 2>/dev/null | grep -qx '5'; then
+        WORKER_PROMPT_H5="IMPORTANT: You are in pane multiagent:0.5. This means you are worker5 (5号猫). Read ONLY instructions/5gou-neko.md - that is YOUR instruction file. Ignore any other worker identity from CLAUDE.md. Display idle cat art after understanding."
+        tmux send-keys -t "multiagent:0.5" "CLAUDE_CODE_MAX_OUTPUT_TOKENS=64000 ${WATCHDOG} worker5 '--model haiku --permission-mode bypassPermissions' \"${WORKER_PROMPT_H5}\""
+        tmux send-keys -t "multiagent:0.5" Enter
+        log_info "  └─ Haiku作業猫×1、召喚完了にゃ"
+    else
+        log_info "  └─ Pane 0.5 不在のためHaiku作業猫はスキップにゃ（ペイン数: ${ACTUAL_PANES}）"
+    fi
 
     # 全エージェントの起動待ち（一括）
     sleep 3
+
+    # Bridge watcher 起動（バックグラウンド）
+    if [ -f "./scripts/bridge_watcher.sh" ]; then
+        chmod +x ./scripts/bridge_watcher.sh
+        nohup ./scripts/bridge_watcher.sh >> ./logs/bridge_watcher.log 2>&1 &
+        log_info "  └─ Bridge watcher 起動完了にゃ（outbox監視中）"
+    fi
 
     log_success "全員 Claude Code 起動完了にゃ！"
     echo ""
@@ -442,10 +502,15 @@ if [ "$SETUP_ONLY" = false ]; then
 
           /\_/\   「みんな準備はいいかにゃ〜？」
          ( o.o )
-          > ^ <         /\_/\  /\_/\  /\_/\  /\_/\
+          > ^ <         /\_/\  /\_/\  /\_/\  /\_/\    Sonnet
          /|   |\       ( o.o )( o.o )( >.< )( -.- )
         (_|   |_)       > ^ <  > ^ <  > ^ <  > ^ <
         [親分猫]       [1号猫][2号犬][3号猫][4号猫]
+
+                              /\_/\                   Haiku
+                             ( >w< )
+                              > ^ <
+                             [5号猫]
 
 NEKO_DEPART_EOF
 
@@ -472,11 +537,12 @@ echo "     ┌──────────────────────
 echo "     │  Pane 0: 親分猫 (OYABUN)   │  ← 統括・プロジェクト管理"
 echo "     └─────────────────────────────┘"
 echo ""
-echo "     【multiagentセッション】頭猫・作業猫(犬)のお部屋（1x5 = 5ペイン）"
-echo "     ┌─────────┬─────────┬─────────┬─────────┬─────────┐"
-echo "     │ kashira  │ worker1 │ worker2 │ worker3 │ worker4 │"
-echo "     │(頭猫) │(1号猫)  │(2号犬)  │(3号猫)  │(4号猫)  │"
-echo "     └─────────┴─────────┴─────────┴─────────┴─────────┘"
+echo "     【multiagentセッション】頭猫・作業猫(犬)のお部屋（1x6 = 6ペイン）"
+echo "     ┌─────────┬─────────┬─────────┬─────────┬─────────┬─────────┐"
+echo "     │ kashira  │ worker1 │ worker2 │ worker3 │ worker4 │ worker5 │"
+echo "     │ (頭猫)  │(1号猫)  │(2号犬)  │(3号猫)  │(4号猫)  │(5号猫)  │"
+echo "     │          │ Sonnet  │ Sonnet  │ Sonnet  │ Sonnet  │ Haiku   │"
+echo "     └─────────┴─────────┴─────────┴─────────┴─────────┴─────────┘"
 echo ""
 
 echo ""
@@ -491,12 +557,12 @@ if [ "$SETUP_ONLY" = true ]; then
     echo "  手動でClaude Codeを起動するには:"
     echo "  ┌──────────────────────────────────────────────────────────┐"
     echo "  │  # 親分猫を召喚                                          │"
-    echo "  │  tmux send-keys -t oyabun 'claude --dangerously-skip-permissions' Enter │"
+    echo "  │  tmux send-keys -t oyabun 'claude --permission-mode bypassPermissions' Enter │"
     echo "  │                                                          │"
     echo "  │  # 頭猫・作業猫(犬)を一斉召喚                          │"
-    echo "  │  for i in {0..4}; do \\                                   │"
+    echo "  │  for i in {0..7}; do \\                                   │"
     echo "  │    tmux send-keys -t multiagent:0.\$i \\                   │"
-    echo "  │      'claude --dangerously-skip-permissions' Enter       │"
+    echo "  │      'claude --permission-mode bypassPermissions' Enter  │"
     echo "  │  done                                                    │"
     echo "  └──────────────────────────────────────────────────────────┘"
     echo ""

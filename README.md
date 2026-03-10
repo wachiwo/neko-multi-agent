@@ -582,7 +582,8 @@ neko-multi-agent/
 |
 +-- instructions/             # Agent instruction files
 |   +-- oyabun.md             # Boss Cat instructions
-|   +-- kashira.md            # Head Cat instructions
+|   +-- kashira_core.md       # Head Cat instructions (core)
+|   +-- kashira_policies.md  # Head Cat instructions (policies)
 |   +-- 1gou-neko.md          # Worker Cat #1 instructions
 |   +-- 2gou-inu.md           # Worker Dog #2 instructions
 |   +-- 3gou-neko.md          # Worker Cat #3 instructions

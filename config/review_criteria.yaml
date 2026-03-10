@@ -44,6 +44,9 @@ base_checklist:
   - id: B5
     category: spec_compliance
     check: "Deliverable satisfies the original instruction (objective)"
+  - id: B6
+    category: interface_contract
+    check: "For modules that produce/consume data: verify output format matches downstream consumer's expected input. Trace one data path across the boundary."
 
 # Language-Specific Extensions
 languages:
@@ -62,6 +65,18 @@ languages:
       - id: HC4
         category: validation
         check: "Valid HTML structure (no unclosed tags, proper nesting)"
+      - id: HC5
+        category: css_scope
+        check: "Batch CSS fix: changes limited to task YAML specified properties. No unintended overflow/z-index/position changes."
+      - id: HC6
+        category: css_regression
+        check: "No overflow:hidden on .main-content/.sidebar/.container (sp_034). No position:sticky z-index conflicts with form elements."
+      - id: HC7
+        category: functional_smoke
+        check: "Primary CTAs (search/output/register) in viewport top area, visible on initial load. Output buttons NOT at page bottom."
+      - id: HC8
+        category: css_diff
+        check: "HTML diff before/after confirms NO CSS property changes outside task scope."
 
   php:
     display_name: "PHP"
@@ -145,6 +160,9 @@ languages:
       - id: PY4
         category: style
         check: "PEP 8 compliant (naming, spacing, line length)"
+      - id: PY5
+        category: integration
+        check: "SQL JOIN functions have row count assertions, zero-result guards, and cartesian product detection in tests"
 
   javascript:
     display_name: "JavaScript"
@@ -178,6 +196,25 @@ languages:
         category: interfaces
         check: "Interfaces/types defined for data structures; no implicit object shapes"
 
+  bootstrap_conversion:
+    display_name: "Bootstrap 5 Conversion"
+    checklist:
+      - id: BS1
+        category: overflow
+        check: "Any fixed width > 800px inside .col-* containers requires overflow-x containment on the parent"
+      - id: BS2
+        category: overflow
+        check: "col-sm main content has overflow-x: hidden or auto"
+      - id: BS3
+        category: responsive
+        check: "table-responsive wraps ALL wide tables"
+      - id: BS4
+        category: consistency
+        check: "Same width strategy as reference (% vs px); if different, document why"
+      - id: BS5
+        category: css_external
+        check: "Page-specific CSS in external .css file (assets/page-name.css), not inline <style> blocks"
+
   # --- Extension Guide ---
   # To add a new language, add a block here following the pattern above,
   # then add the file extension mapping to extension_map at the top.
@@ -189,3 +226,82 @@ languages:
   #     - id: GO1
   #       category: error_handling
   #       check: "All errors checked; no ignored error returns"
+
+# ============================================================
+# Security Review Checklists
+# ============================================================
+# Used by security_review tasks (type: security_review).
+# Two complementary perspectives: attacker (black) and defender (white).
+# Kashira assigns one worker per role during security review phase.
+
+security_review:
+  black_hacker:
+    display_name: "Black Hacker (Attacker Perspective)"
+    checklist:
+      - id: BH1
+        category: injection
+        check: "Attempt SQL injection via all user-controlled inputs (form fields, query params, headers)"
+      - id: BH2
+        category: xss
+        check: "Attempt stored/reflected XSS by injecting script tags and event handlers into every output point"
+      - id: BH3
+        category: csrf
+        check: "Verify state-changing requests lack CSRF tokens or accept cross-origin requests"
+      - id: BH4
+        category: auth_bypass
+        check: "Attempt to access protected endpoints without valid session/token; test expired/forged tokens"
+      - id: BH5
+        category: idor
+        check: "Manipulate object IDs in URLs/params to access other users' resources (horizontal privilege escalation)"
+      - id: BH6
+        category: path_traversal
+        check: "Inject ../ sequences and encoded variants into file path parameters to read arbitrary files"
+      - id: BH7
+        category: ssrf
+        check: "Submit internal/loopback URLs (127.0.0.1, metadata endpoints) via URL input fields"
+      - id: BH8
+        category: deserialization
+        check: "Identify deserialization entry points; check for unsafe deserialize calls on untrusted data"
+      - id: BH9
+        category: secrets_exposure
+        check: "Search codebase for hardcoded API keys, passwords, tokens, and connection strings"
+      - id: BH10
+        category: privilege_escalation
+        check: "Attempt vertical escalation by modifying role/permission fields in requests or tokens"
+
+  white_hacker:
+    display_name: "White Hacker (Defender Perspective)"
+    checklist:
+      - id: WH1
+        category: input_validation
+        check: "All user input validated server-side with allowlists; reject-by-default for unexpected input"
+      - id: WH2
+        category: output_encoding
+        check: "All dynamic output HTML-encoded/escaped appropriate to context (HTML, JS, URL, CSS)"
+      - id: WH3
+        category: parameterized_queries
+        check: "All database queries use parameterized statements or ORM; zero string concatenation in SQL"
+      - id: WH4
+        category: cors_policy
+        check: "CORS Access-Control-Allow-Origin is not wildcard (*) for authenticated endpoints"
+      - id: WH5
+        category: csp_headers
+        check: "Content-Security-Policy header set; no unsafe-inline/unsafe-eval without justification"
+      - id: WH6
+        category: rate_limiting
+        check: "Authentication and sensitive endpoints have rate limiting or throttling configured"
+      - id: WH7
+        category: token_handling
+        check: "Auth tokens stored securely (HttpOnly cookies or secure storage); no tokens in URLs or localStorage"
+      - id: WH8
+        category: error_leakage
+        check: "Error responses do not expose stack traces, SQL queries, internal paths, or server versions"
+      - id: WH9
+        category: dependency_vulnerabilities
+        check: "Third-party dependencies checked for known CVEs; no packages with unpatched critical vulnerabilities"
+      - id: WH10
+        category: audit_trail
+        check: "Security-relevant actions (login, permission changes, data access) are logged with timestamp and actor"
+      - id: WH11
+        category: csrf_defense
+        check: "Anti-CSRF tokens on all state-changing forms; SameSite cookie attribute set to Lax or Strict"

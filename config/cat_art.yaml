@@ -1,0 +1,1211 @@
+# cat_art.yaml — Seasonal ASCII Art Catalog (Complete)
+# Part A (Jan-Jun + specials): Designed by Worker3 (3号猫)
+# Part B (Jul-Dec + specials + achievements): Designed by Worker4 (4号猫), Fixed by Worker1 (1号猫)
+# Merged by: Worker3 (3号猫) — merge_021_002
+#
+# Structure: month -> stage_species -> multiline ASCII art (5-8 lines)
+# Stages: kitten (C rank), cat (B/A rank), lion (S/SS rank)
+# Species: cat (W1/W3/W4), dog (W2)
+# Final line of each art: seasonal greeting
+# Width: ~25 chars max per line
+# Note: |2 indicator = content indent is 4 spaces (key_indent 2 + 2)
+
+_metadata:
+  version: "1.1-fixed"
+  description: "Seasonal ASCII Art Catalog for neko-multi-agent"
+  loading_note: "Load ONLY current month section to minimize token usage"
+  structure: "month -> {theme, image_description, stage_species: art}"
+  stages:
+    kitten: "C rank"
+    cat: "B/A rank"
+    lion: "S/SS rank"
+  species:
+    cat: "W1, W3, W4"
+    dog: "W2"
+  special_day_priority: "achievement > date_special > monthly"
+  eye_convention:
+    cat: "・ω・"
+    dog: "^w^"
+    kitten: "o.o / owo"
+  format_standard: "|2 block scalar (matches W3 Jan-Jun catalog)"
+
+# ============================================================
+# JANUARY — New Year (お正月)
+# Motifs: kagami-mochi, kadomatsu, sunrise, shimekazari
+# ============================================================
+january:
+  theme: "New Year (お正月)"
+  image_description: "Cat on kagami-mochi, kadomatsu bamboo"
+  kitten_cat: |2
+         *
+       /\_/\
+      (=^.^=)
+       (---)
+      (-----)
+    あけおめにゃ!
+  cat_cat: |2
+      \|//
+      /\_/\   ||
+     ( ・ω・)  ||
+      > ^ <  ||
+     /|   |\
+    (_|   |_)
+    あけおめにゃ!
+  lion_cat: |2
+         ★
+     .*=====*.
+     */\_/\*
+    ( ・ω・ )  ||
+     |> ^ <|  ||
+     /|   |\
+    (_|   |_)
+    あけおめにゃ!
+  kitten_dog: |2
+         *
+       U   U
+      ( ^.^ )
+       (---)
+      (-----)
+    あけおめわん!
+  cat_dog: |2
+      \|//
+     U       U
+      ( ・ω・)  ||
+       > ^ <  ||
+      /|   |\
+     (_|   |_)
+    あけおめわん!
+  lion_dog: |2
+         ★
+     .*=====*.
+     *U     U*
+    ( ・ω・ )  ||
+     |> ^ <|  ||
+     /|   |\
+    (_|   |_)
+    あけおめわん!
+
+# ============================================================
+# FEBRUARY — Setsubun (節分)
+# Motifs: oni horns, soybeans (o), ehomaki
+# ============================================================
+february:
+  theme: "Setsubun (節分)"
+  image_description: "Oni-horned cat, throwing beans, ehomaki"
+  kitten_cat: |2
+      v v
+     /\_/\
+    (=^o^=)  o
+     >   < o
+     |   |
+    おには～そとにゃ!
+  cat_cat: |2
+      v   v
+      /\_/\   o
+     ( ・ω・) o .
+      > ^ < o
+     /|   |\
+    (_|   |_)
+    おには～そとにゃ!
+  lion_cat: |2
+       v   v
+     *=======*
+     */\_/\*  o
+    ( ・ω・ ) o .
+     |> ^ <| o
+     /|   |\
+    (_|   |_)
+    おには～そとにゃ!
+  kitten_dog: |2
+      v v
+     U   U
+    ( ^o^ )  o
+     >   < o
+     |   |
+    おには～そとわん!
+  cat_dog: |2
+      v   v
+     U       U
+      ( ・ω・) o .
+       > ^ < o
+      /|   |\
+     (_|   |_)
+    おには～そとわん!
+  lion_dog: |2
+       v   v
+     *=======*
+     *U     U*  o
+    ( ・ω・ ) o .
+     |> ^ <| o
+     /|   |\
+    (_|   |_)
+    おには～そとわん!
+
+# ============================================================
+# MARCH — Hinamatsuri (ひな祭り)
+# Motifs: hina dolls, peach blossoms (*), tiered display
+# ============================================================
+march:
+  theme: "Hinamatsuri (ひな祭り)"
+  image_description: "Ohina-sama cat, peach blossoms"
+  kitten_cat: |2
+    *  /\_/\  *
+      (=^.^=)
+    *  {~~}  *
+       |__|
+      /====\
+    ひな祭りにゃ～
+  cat_cat: |2
+    *   __   *
+       /\_/\
+    * ( ・ω・) *
+       {~~~~}
+      /|    |\
+     (_|    |_)
+    ひな祭りにゃ～
+  lion_cat: |2
+    *   __    *
+      *=====*
+      */\_/\*
+    * ( ・ω・ ) *
+       {~~~~~}
+      /|     |\
+     (_|     |_)
+    ひな祭りにゃ～
+  kitten_dog: |2
+    *  U   U  *
+      ( ^.^ )
+    *  {~~}  *
+       |__|
+      /====\
+    ひな祭りわん!
+  cat_dog: |2
+    *   __   *
+      U     U
+    * ( ・ω・) *
+       {~~~~}
+      /|    |\
+     (_|    |_)
+    ひな祭りわん!
+  lion_dog: |2
+    *   __    *
+      *=====*
+      *U   U*
+    * ( ・ω・ ) *
+       {~~~~~}
+      /|     |\
+     (_|     |_)
+    ひな祭りわん!
+
+# ============================================================
+# APRIL — Hanami (花見)
+# Motifs: cherry blossoms (*) falling, picnic, petals
+# ============================================================
+april:
+  theme: "Hanami (花見)"
+  image_description: "Cat under cherry blossoms, petals falling"
+  kitten_cat: |2
+    *  *  *  *
+      /\_/\
+     (=^.^=) *
+      > ~ <
+      |   |  *
+    花見にゃ～
+  cat_cat: |2
+    * .* *. * .*
+       /\_/\
+      ( ・ω・) *
+       > ^ <
+      /|   |\ *
+     (_|   |_)
+    花見にゃ～
+  lion_cat: |2
+    * .* *. * .*
+      *=====*
+      */\_/\*  *
+     ( ・ω・ )
+      |> ^ <| *
+      /|   |\
+     (_|   |_)
+    花見にゃ～
+  kitten_dog: |2
+    *  *  *  *
+     U     U
+     ( ^.^ ) *
+      > ~ <
+      |   |  *
+    花見わん!
+  cat_dog: |2
+    * .* *. * .*
+      U     U
+      ( ・ω・) *
+       > ^ <
+      /|   |\ *
+     (_|   |_)
+    花見わん!
+  lion_dog: |2
+    * .* *. * .*
+      *=====*
+     *U     U*  *
+     ( ・ω・ )
+      |> ^ <| *
+      /|   |\
+     (_|   |_)
+    花見わん!
+
+# ============================================================
+# MAY — Children's Day (こどもの日)
+# Motifs: koinobori (>=<*>~) streamers, kabuto helmet
+# ============================================================
+may:
+  theme: "Children's Day (こどもの日)"
+  image_description: "Cat with koinobori streamers, kabuto helmet"
+  kitten_cat: |2
+       |
+    >=<*>~
+      /\_/\
+     (=^.^=)
+      > o <
+      |   |
+    こどもの日にゃ!
+  cat_cat: |2
+       | >=<*>~
+      /\_/\
+     ( ・ω・)
+      > ^ <
+     /|   |\
+    (_|   |_)
+    こどもの日にゃ!
+  lion_cat: |2
+       | >=<**>~~
+     *=====*
+     */\_/\*
+    ( ・ω・ )
+     |> ^ <|
+     /|   |\
+    (_|   |_)
+    こどもの日にゃ!
+  kitten_dog: |2
+       |
+    >=<*>~
+     U     U
+     ( ^.^ )
+      > o <
+      |   |
+    こどもの日わん!
+  cat_dog: |2
+       | >=<*>~
+     U       U
+      ( ・ω・)
+       > ^ <
+      /|   |\
+     (_|   |_)
+    こどもの日わん!
+  lion_dog: |2
+       | >=<**>~~
+     *=======*
+     *U     U*
+    ( ・ω・ )
+     |> ^ <|
+     /|   |\
+    (_|   |_)
+    こどもの日わん!
+
+# ============================================================
+# JUNE — Rainy Season (梅雨)
+# Motifs: umbrella, raindrops (,), teru-teru-bouzu, hydrangea
+# ============================================================
+june:
+  theme: "Rainy Season (梅雨)"
+  image_description: "Teru-teru-bouzu cat, umbrella, raindrops"
+  kitten_cat: |2
+    , , , , ,
+      _____
+     / , , \
+    /\_/\   |
+    (=;.;=) |
+     > ~ < /
+    梅雨にゃ～...
+  cat_cat: |2
+    , , , , , ,
+      _______
+     /  , ,  \
+      /\_/\   |
+     ( -ω-) |
+      > ^ < /
+     /|   |\
+    梅雨にゃ～...
+  lion_cat: |2
+    , , , , , , ,
+      _________
+     /  , , ,  \
+     *=/\_/\=*  |
+    ( -ω- )   |
+     |> ^ <|  /
+    (_|   |_)
+    梅雨にゃ～...
+  kitten_dog: |2
+    , , , , ,
+      _____
+     / , , \
+    U   U   |
+    ( ;.; ) |
+     > ~ < /
+    梅雨わん...
+  cat_dog: |2
+    , , , , , ,
+      _______
+     /  , ,  \
+     U     U  |
+     ( -ω-) |
+      > ^ < /
+     /|   |\
+    梅雨わん...
+  lion_dog: |2
+    , , , , , , ,
+      _________
+     /  , , ,  \
+    *=U     U=*  |
+    ( -ω- )    |
+     |> ^ <|  /
+    (_|   |_)
+    梅雨わん...
+
+# ============================================================
+# JULY — Tanabata (七夕)
+# ============================================================
+july:
+  theme: "Tanabata (七夕)"
+  image_description: "Cat writing churu on tanzaku"
+  kitten_cat: |2
+      /\_/\  *
+     ( o.o )
+      > ^ < |~~
+      "churu"
+    ~tanabata nya~
+  cat_cat: |2
+      /\_/\    *
+     ( ・ω・) _
+      > ^ < |~~
+     /|   |\ |
+    (_|   |_)|
+    tanzaku: churu
+    ~tanabata no onegai nya~
+  lion_cat: |2
+    *=*.*=*.
+    ( ・ω・)   *
+    /| M  M|\_
+    \|     |/|~~
+     |     | |
+    tanzaku: sekai heiwa to churu
+    ~tanabata nya~
+  kitten_dog: |2
+    U   U  *
+    ( owo )
+     > ^ < |~~
+     "bone"
+    ~tanabata wan~
+  cat_dog: |2
+    U     U    *
+    ( ^w^ ) _
+     > ^ < |~~
+    /|   |\ |
+    (_| ~ |_)|
+    tanzaku: bone
+    ~tanabata no onegai wan~
+  lion_dog: |2
+    *U     U*
+    *=*.*=*.
+    ( ^w^ )   *
+    /| M  M|\_
+    \|     |/|~~
+     |  ~  | |
+    tanzaku: sekai heiwa to bone
+    ~tanabata wan~
+
+# ============================================================
+# AUGUST — Natsu Matsuri (夏祭り)
+# ============================================================
+august:
+  theme: "Natsu Matsuri (夏祭り)"
+  image_description: "Yukata cat, goldfish scooping"
+  kitten_cat: |2
+    /\_/\ ~
+    ( o.o )
+    >m^ <
+    ~yukata~
+    natsu matsuri nya!
+  cat_cat: |2
+     /\_/\  ~
+    ( ・ω・) [*]
+     > ^ <
+    /| yu|\
+    (_|kata|_)~~<*
+    ~natsu matsuri nya~
+  lion_cat: |2
+      [*][*][*]
+     /\_/\
+    ( ・ω・) ~~
+    /| M  M|\
+    \| yu  |/~~<*
+     | kata |
+    ~matsuri no ou nya~
+  kitten_dog: |2
+    U   U ~
+    ( owo )
+    >m^ <
+    ~yukata~
+    natsu matsuri wan!
+  cat_dog: |2
+    U     U  ~
+    ( ^w^ ) [*]
+     > ^ <
+    /| yu|\
+    (_|kata|_)~~<*
+    ~natsu matsuri wan~
+  lion_dog: |2
+      [*][*][*]
+    *U     U*
+    ( ^w^ ) ~~
+    /| M  M|\
+    \| yu  |/~~<*
+     | kata |~
+    ~matsuri no ou wan~
+
+# ============================================================
+# SEPTEMBER — Tsukimi (お月見)
+# ============================================================
+september:
+  theme: "Tsukimi (お月見)"
+  image_description: "Cat next to tsukimi dango"
+  kitten_cat: |2
+       O
+    /\_/\
+    ( o.o )
+     > ^ < ooo
+    ~otsukimi nya~
+  cat_cat: |2
+        O
+     /\_/\
+    ( ・ω・)  @@
+     > ^ <  ooo
+    /|   |\  oo
+    (_|   |_)  o
+    ~otsukimi nya~
+  lion_cat: |2
+      O  O  O
+     /\_/\
+    ( ・ω・)   @@
+    /| M  M|\  ooo
+    \|     |/   oo
+     |     |     o
+    ~tsuki wo suberu neko nya~
+  kitten_dog: |2
+       O
+    U   U
+    ( owo )
+     > ^ < ooo
+    ~otsukimi wan~
+  cat_dog: |2
+        O
+    U     U
+    ( ^w^ )  @@
+     > ^ <  ooo
+    /|   |\  oo
+    (_| ~ |_)  o
+    ~otsukimi wan~
+  lion_dog: |2
+      O  O  O
+    *U     U*
+    ( ^w^ )   @@
+    /| M  M|\  ooo
+    \|     |/   oo
+     |  ~  |     o
+    ~tsuki wo suberu inu wan~
+
+# ============================================================
+# OCTOBER — Halloween (ハロウィン)
+# ============================================================
+october:
+  theme: "Halloween (ハロウィン)"
+  image_description: "Pumpkin cat, witch hat"
+  kitten_cat: |2
+     /\
+    /  \
+    /\_/\
+    ( o.o ) @
+     > ^ <
+    ~halloween nya~
+  cat_cat: |2
+      /\
+     /^^\
+    /\_/\
+    ( ・ω・)  @_@
+     > ^ <  /
+    /|   |\/
+    (_|   |_)
+    ~trick or churu nya~
+  lion_cat: |2
+      /\
+     /^^\
+    /\_/\
+    ( @.@ )  @_@ @_@
+    /| M  M|\  /
+    \|     |/\/
+     |  V  |
+    ~yami no ou nya~
+  kitten_dog: |2
+     /\
+    /  \
+    U   U
+    ( owo ) @
+     > ^ <
+    ~halloween wan~
+  cat_dog: |2
+      /\
+     /^^\
+    U     U
+    ( ^w^ )  @_@
+     > ^ <  /
+    /|   |\/
+    (_| ~ |_)
+    ~trick or bone wan~
+  lion_dog: |2
+      /\
+     /^^\
+    *U     U*
+    ( @w@ )  @_@ @_@
+    /| M  M|\  /
+    \|     |/\/
+     |  V~ |
+    ~yami no ou wan~
+
+# ============================================================
+# NOVEMBER — Kouyou (紅葉)
+# ============================================================
+november:
+  theme: "Kouyou (紅葉)"
+  image_description: "Cat diving into fallen leaves"
+  kitten_cat: |2
+    *~*~*
+    /\_/\
+    ( o.o )
+     > ^ < ~
+    ~momiji nya~
+  cat_cat: |2
+    *~*~*~*~*
+     /\_/\
+    ( ・ω・) ~
+     > ^ <
+    /|   |\  *
+    (_|   |_)
+    ~*~*~*~*~*~
+    ~momijigari nya~
+  lion_cat: |2
+    *~*~*~*~*~*~
+     /\_/\
+    ( ・ω・)  ~
+    /| M  M|\
+    \|     |/ *
+     |     |
+    *~*~*~*~*~*~
+    ~aki no ou nya~
+  kitten_dog: |2
+    *~*~*
+    U   U
+    ( owo )
+     > ^ < ~
+    ~momiji wan~
+  cat_dog: |2
+    *~*~*~*~*
+    U     U
+    ( ^w^ ) ~
+     > ^ <
+    /|   |\  *
+    (_| ~ |_)
+    *~*~*~*~*~*
+    ~momijigari wan~
+  lion_dog: |2
+    *~*~*~*~*~*~
+    *U     U*
+    ( ^w^ )  ~
+    /| M  M|\
+    \|     |/ *
+     |  ~  |
+    *~*~*~*~*~*~
+    ~aki no ou wan~
+
+# ============================================================
+# DECEMBER — Christmas (クリスマス)
+# ============================================================
+december:
+  theme: "Christmas (クリスマス)"
+  image_description: "Santa cat, churu in stocking"
+  kitten_cat: |2
+      @
+    /\_/\
+    ( o.o ) +
+     > ^ <
+    [churu]
+    ~merry xmas nya~
+  cat_cat: |2
+      @
+     /\_/\   +
+    ( ・ω・)  *
+     > ^ < [!]
+    /|   |\
+    (_|   |_)[_]
+    ~merry christmas nya~
+  lion_cat: |2
+      @
+     /\_/\    +
+    ( ・ω・)   *
+    /| M  M|\ [!][!]
+    \|     |/[_][_]
+     | santa |
+    ~seiya no ou nya~
+  kitten_dog: |2
+      @
+    U   U
+    ( owo ) +
+     > ^ <
+    [bone]
+    ~merry xmas wan~
+  cat_dog: |2
+      @
+    U     U   +
+    ( ^w^ )  *
+     > ^ < [!]
+    /|   |\
+    (_| ~ |_)[_]
+    ~merry christmas wan~
+  lion_dog: |2
+      @
+    *U     U*    +
+    ( ^w^ )   *
+    /| M  M|\ [!][!]
+    \|     |/[_][_]
+     |santa~|
+    ~seiya no ou wan~
+
+# ============================================================
+# SPECIAL DAYS — Date-based overrides (chronological order)
+# These OVERRIDE monthly art for the specified date range.
+# ============================================================
+
+special_jan_1_3:
+  date_start: "01-01"
+  date_end: "01-03"
+  theme: "Hatsuhinode (初日の出)"
+  image_description: "Cat watching first sunrise of the year"
+  kitten_cat: |2
+       ___
+    .-'   '-.
+      /\_/\
+     (=^o^=)
+      > ^ <
+    初日の出にゃ!
+  cat_cat: |2
+      .----.
+    .'  ||  '.
+       /\_/\
+      ( ・ω・)
+       > ^ <
+      /|   |\
+     (_|   |_)
+    初日の出にゃ!
+  lion_cat: |2
+      .----.
+    .'  ||  '.
+     *=======*
+     */\_/\*
+    ( ・ω・ )
+     |> ^ <|
+    (_|   |_)
+    初日の出にゃ!
+  kitten_dog: |2
+       ___
+    .-'   '-.
+     U     U
+     ( ^o^ )
+      > ^ <
+    初日の出わん!
+  cat_dog: |2
+      .----.
+    .'  ||  '.
+      U     U
+      ( ・ω・)
+       > ^ <
+      /|   |\
+     (_|   |_)
+    初日の出わん!
+  lion_dog: |2
+      .----.
+    .'  ||  '.
+     *=======*
+     *U     U*
+    ( ・ω・ )
+     |> ^ <|
+    (_|   |_)
+    初日の出わん!
+
+special_feb_14:
+  date_start: "02-14"
+  date_end: "02-14"
+  theme: "Valentine's Day (バレンタイン)"
+  image_description: "Cat with chocolate heart"
+  kitten_cat: |2
+    <3    <3
+      /\_/\
+     (=^//^=)
+      > [] <
+      |    |
+    チョコにゃ!
+  cat_cat: |2
+    <3      <3
+       /\_/\
+      ( ・ω・)
+       > [] <
+      /|    |\
+     (_|    |_)
+    チョコよりちゅーるにゃ!
+  lion_cat: |2
+    <3  <3   <3
+      *=======*
+      */\_/\*
+     ( ・ω・ )
+      |> [] <|
+      /|    |\
+     (_|    |_)
+    チョコよりちゅーるにゃ!
+  kitten_dog: |2
+    <3    <3
+     U     U
+     ( ^//^ )
+      > [] <
+      |    |
+    チョコわん!
+  cat_dog: |2
+    <3      <3
+      U     U
+      ( ・ω・)
+       > [] <
+      /|    |\
+     (_|    |_)
+    チョコよりほねっこわん!
+  lion_dog: |2
+    <3  <3   <3
+      *=======*
+      *U     U*
+     ( ・ω・ )
+      |> [] <|
+      /|    |\
+     (_|    |_)
+    チョコよりほねっこわん!
+
+special_mar_14:
+  date_start: "03-14"
+  date_end: "03-14"
+  theme: "White Day (ホワイトデー)"
+  image_description: "Cat with wrapped gift, ribbon"
+  kitten_cat: |2
+      /\_/\
+     (=^.^=)
+      > ~~ <
+      [####]
+      |####|
+    お返しにゃ!
+  cat_cat: |2
+       /\_/\
+      ( ・ω・) ~
+       > ^ <
+      /| ## |\
+     (_|[##]|_)
+    お返しにゃ!
+  lion_cat: |2
+      *=====*
+      */\_/\*
+     ( ・ω・ ) ~
+      |> ^ <|
+      /| ## |\
+     (_|[##]|_)
+    お返しにゃ!
+  kitten_dog: |2
+     U     U
+     ( ^.^ )
+      > ~~ <
+      [####]
+      |####|
+    お返しわん!
+  cat_dog: |2
+      U     U
+      ( ・ω・) ~
+       > ^ <
+      /| ## |\
+     (_|[##]|_)
+    お返しわん!
+  lion_dog: |2
+      *=====*
+      *U   U*
+     ( ・ω・ ) ~
+      |> ^ <|
+      /| ## |\
+     (_|[##]|_)
+    お返しわん!
+
+special_apr_1:
+  date_start: "04-01"
+  date_end: "04-01"
+  theme: "April Fools (エイプリルフール)"
+  image_description: "Upside-down cat, reversed art"
+  kitten_cat: |2
+      |   |
+      < ~ >
+     (=^.^=)
+      \/_\/
+        ?!
+    うそにゃ!?
+  cat_cat: |2
+    (_|   |_)
+     \|   |/
+      < ^ >
+     ( ・ω・)
+      \/_\/
+    うそにゃ!?
+  lion_cat: |2
+    (_|   |_)
+     \|   |/
+     |< ^ >|
+    ( ・ω・ )
+     *\/_\/*
+     *=====*
+    うそにゃ!?
+  kitten_dog: |2
+      |   |
+      < ~ >
+     ( ^.^ )
+      U   U
+        ?!
+    うそわん!?
+  cat_dog: |2
+    (_|   |_)
+     \|   |/
+      < ^ >
+     ( ・ω・)
+     U     U
+    うそわん!?
+  lion_dog: |2
+    (_|   |_)
+     \|   |/
+     |< ^ >|
+    ( ・ω・ )
+    * U   U *
+     *=====*
+    うそわん!?
+
+special_oct_31:
+  theme: "Full-costume Halloween (本気ハロウィン)"
+  date_start: "10-31"
+  date_end: "10-31"
+  overrides: "october"
+  kitten_cat: |2
+     /\
+    /  \
+    /\_/\
+    ( @.@ ) @
+     > ^ <
+    ~trick or churu nya!
+  cat_cat: |2
+     /\
+    /^^\
+    /\_/\
+    ( @.@ ) @_@ @_@ @_@
+     >!<  ///
+    /|V |\///
+    (_|X |_)
+    ~honki no halloween nya~
+    Trick or Churu!!
+  lion_cat: |2
+    +==========+
+    |   /\   . |
+    |  /^^\  . |
+    | /\_/\  . |
+    |( @.@ )   | @_@ @_@
+    /| M  M |\  V V
+    \|  X   |/
+    | DRACULA  |
+    ~yami no teiou nya~
+  kitten_dog: |2
+     /\
+    /  \
+    U   U
+    ( owo ) @
+     > ^ <
+    ~trick or bone wan!
+  cat_dog: |2
+     /\
+    /^^\
+    U     U
+    ( @w@ ) @_@ @_@ @_@
+     >!<  ///
+    /|V |\///
+    (_|X~|_)
+    ~honki no halloween wan~
+    Trick or Bone!!
+  lion_dog: |2
+    +==========+
+    |   /\     |
+    |  /^^\    |
+    | *U   U*  |
+    |( @w@ )   | @_@ @_@
+    /| M  M |\  V V
+    \|  X~  |/
+    | DRACULA  |
+    ~yami no teiou wan~
+
+special_nov_22:
+  theme: "Ii-fufu-no-hi (いい夫婦の日)"
+  date_start: "11-22"
+  date_end: "11-22"
+  overrides: "november"
+  cat_cat: |2
+    /\_/\ <3 /\_/\
+    ( ・ω・)( ・ω・)
+     > ^ <  > ^ <
+    /|  |\/|  |\
+    (_|  |_)(_|  |_)
+    ~ii fuufu no hi nya <3
+  cat_dog: |2
+    /\_/\   U     U
+    ( ・ω・) <3 ( ^w^ )
+     > ^ <    > ^ <
+    /|  |\   /|  |\
+    (_|  |_) (_| ~|_)
+    ~ii fuufu nyan-wan <3
+
+special_dec_31:
+  theme: "Year-end (年越し)"
+  date_start: "12-31"
+  date_end: "12-31"
+  overrides: "december"
+  kitten_cat: |2
+    [+] /\_/\ [+]
+       ( o.o )
+        > ^ < ~~~
+    ~toshikoshi nya~
+  cat_cat: |2
+    [+] /\_/\ [+]
+       ( ・ω・)
+        > ^ < ~~~
+       /|   |\
+      (_|   |_)
+    ~toshikoshi soba nya~
+    kotoshi mo otsukaresama nya
+  lion_cat: |2
+    [+][+][+][+][+]
+       /\_/\
+      ( ・ω・)  ~~~
+    /| M  M|\
+    \|     |/
+     |     |
+    [+][+][+][+][+]
+    ~ooneko no toshikoshi nya~
+  kitten_dog: |2
+    [+] U   U [+]
+       ( owo )
+        > ^ < ~~~
+    ~toshikoshi wan~
+  cat_dog: |2
+    [+] U     U [+]
+      ( ^w^ )
+       > ^ < ~~~
+      /|   |\
+     (_| ~ |_)
+    ~toshikoshi soba wan~
+    kotoshi mo otsukaresama wan
+  lion_dog: |2
+    [+][+][+][+][+]
+    *U     U*
+    ( ^w^ )  ~~~
+    /| M  M|\
+    \|     |/
+     |  ~  |
+    [+][+][+][+][+]
+    ~ooinu no toshikoshi wan~
+
+# ============================================================
+# SPECIAL EVENTS — Achievement-based overrides
+# ============================================================
+
+special_system_birthday:
+  theme: "System Birthday (お誕生日)"
+  trigger: "date == system_created_date"
+  overrides: "all"
+  kitten_cat: |2
+    !!!
+    /\_/\
+    ( O.O ) [~]
+     > ^ <
+    ~omedetou nya!
+  cat_cat: |2
+    !!! HAPPY BIRTHDAY !!!
+       /\_/\
+      ( O.O )  [~~]
+       > ^ <
+      /|   |\
+     (_|   |_)
+    ~otanjoubi nya!~
+    !!! HAPPY BIRTHDAY !!!
+  lion_cat: |2
+    *!!! HAPPY BIRTHDAY !!!*
+         /\_/\
+        ( O.O )  [~~]
+       /| M  M|\
+       \|     |/
+        |BIRTH|
+    *!!! HAPPY BIRTHDAY !!!*
+    ~densetsu no tanjoubi nya~
+  kitten_dog: |2
+    !!!
+    U   U
+    ( OwO ) [~]
+     > ^ <
+    ~omedetou wan!
+  cat_dog: |2
+    !!! HAPPY BIRTHDAY !!!
+    U     U
+    ( OwO )  [~~]
+     > ^ <
+    /|   |\
+    (_| ~ |_)
+    ~otanjoubi wan!~
+    !!! HAPPY BIRTHDAY !!!
+  lion_dog: |2
+    *!!! HAPPY BIRTHDAY !!!*
+    *U     U*
+    ( OwO )  [~~]
+    /| M  M|\
+    \|     |/
+     |BIRTH|
+    *!!! HAPPY BIRTHDAY !!!*
+    ~densetsu no tanjoubi wan~
+
+special_all_tasks_complete:
+  theme: "All Tasks Complete (全タスク完了)"
+  trigger: "all_cmd_tasks == done"
+  overrides: "all"
+  kitten_cat: |2
+    ***
+    /\_/\
+    ( O.O ) [V]
+     > ^ <
+    ~yatta nya!
+  cat_cat: |2
+    *=*=*=*=*=*=*
+       /\_/\
+      ( O.O )  !!
+       > ^ < [V]
+      /|   |\
+     (_|   |_) !!
+    ~zen task kanryou nya!~
+    otsukaresama nya!
+  lion_cat: |2
+    *=*=*=*=*=*=*
+        /\_/\
+       ( O.O )[V][V]
+      /| M  M|\
+      \| SHO |/ !!
+       | RI  | !!
+    *=*=*=*=*=*=*
+    ~kanzen shouri nya~
+  kitten_dog: |2
+    ***
+    U   U
+    ( OwO ) [V]
+     > ^ <
+    ~yatta wan!
+  cat_dog: |2
+    *=*=*=*=*=*=*
+    U     U
+    ( OwO )  !!
+     > ^ < [V]
+    /|   |\
+    (_| ~ |_) !!
+    ~zen task kanryou wan!~
+    otsukaresama wan!
+  lion_dog: |2
+    *=*=*=*=*=*=*
+    *U     U*
+    ( OwO )[V][V]
+    /| M  M|\
+    \| SHO |/ !!
+     | RI  | !!
+    *=*=*=*=*=*=*
+    ~kanzen shouri wan~
+
+special_ss_rankup:
+  theme: "SS Rank Achievement (SSランク達成)"
+  trigger: "rank == SS and rank_changed"
+  overrides: "all"
+  kitten_cat: |2
+      W
+    /\_/\
+    ( @.@ )
+     > ^ <
+    ===*===
+    * SS nya! *
+  cat_cat: |2
+    ===============
+        W
+       /\_/\
+      ( @.@ )
+       > ^ <
+      /|===|\
+     (_|===|_)
+       +=*=+
+    ===============
+    ** SS RANK **
+    densetsu no neko, kourin nya
+  lion_cat: |2
+    *===========*
+       W W W
+      /\_/\
+     ( @.@ )
+    /| M  M|\
+    \|  W  |/
+     | LEGEND |
+      +=**=+
+    *===========*
+    *** LEGENDARY ***
+    densetsu wo koeta neko nya
+  kitten_dog: |2
+      W
+    U   U
+    ( @w@ )
+     > ^ <
+    ===*===
+    * SS wan! *
+  cat_dog: |2
+    ===============
+        W
+    U     U
+    ( @w@ )
+     > ^ <
+    /|===|\
+    (_|===|_)
+      +=*=+
+    ===============
+    ** SS RANK **
+    densetsu no inu, kourin wan
+  lion_dog: |2
+    *===========*
+       W W W
+    *U     U*
+    ( @w@ )
+    /| M  M|\
+    \|  W  |/
+     |LEGEND|
+      +=**=+
+    *===========*
+    *** LEGENDARY ***
+    densetsu wo koeta inu wan

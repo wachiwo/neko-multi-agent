@@ -526,7 +526,6 @@ RESULTS+=("キューファイル: OK")
 log_step "STEP 8: 実行権限設定"
 
 SCRIPTS=(
-    "setup.sh"
     "osanpo.sh"
     "first_setup.sh"
 )

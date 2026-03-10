@@ -1,0 +1,1903 @@
+# ============================================================================
+# GAMIFICATION SYSTEM — neko-multi-agent MASTER SPEC
+# ============================================================================
+# Version: 1.0.0
+# Description: Complete gamification system for neko-multi-agent.
+#   Defines ranks, titles, art, rewards, tournaments, streaks, achievements,
+#   fortunes, rivalries, bounties, trading cards, secret bosses, mentoring,
+#   whistleblower governance, and quarterly cycle management.
+# Last Updated: 2026-02-12
+#
+# Merged from:
+#   Part A (Core Progression): gamification_core_fixed.yaml — Worker1
+#     Features 1-5, 7-8, Quarterly Cycle, Stat Card, Data Storage
+#   Part B (Competition & Governance): gamification_competition_fixed.yaml — Worker2
+#     Features 6, 9-16, Global Rules, Token Impact Analysis
+#
+# Design principles:
+#   1. Fun must never compromise quality (W4's meta-rule)
+#   2. Layer on existing workflows — no new processes (W1)
+#   3. Make quality VISIBLE, not just rewarded (W4)
+#   4. Every mechanic must survive the question: "Does this make work BETTER?" (W4)
+#
+# Sources: All 4 worker brainstorms from consult_021.
+#   W1: Dual-axis ranking, achievement system, mood-reactive art, morale meter
+#   W2: Quality multiplier as enforcement, bounty board, violation penalty, evolution art
+#   W3: Combo system, rivalry board, trading cards, career arc narrative
+#   W4: Stat cards, exponential thresholds, Critical Hit, streak types, meta-rule
+#
+# Feature list (16 active):
+#   1. Rank System           9. Daily Fortune
+#   2. Title System         10. Critical Hit
+#   3. Evolution Art        11. Rivalry System
+#   4. Seasonal Art Rules   12. Bounty Board
+#   5. Quality Multiplier   13. Trading Cards
+#   6. Tournament           14. Secret Boss
+#   7. Combo / Streaks      15. Mentor-Apprentice
+#   8. Achievement Badges   16. Whistleblower System
+# ============================================================================
+
+
+# ============================================================================
+# SECTION 1: GLOBAL RULES (shared across all features)
+# ============================================================================
+global_rules:
+  # Authoritative base churu values — referenced by ALL features
+  base_churu:
+    small: 2
+    medium: 5
+    large: 12
+  # Per-task churu cap — no single task can exceed this
+  per_task_churu_cap: 40
+  # Prevents runaway stacking. Worst-case scenario stays bounded.
+  # Example max: large(12) x maguro(2.0) + boss(8) + streak(5) + LGTM(2) + findings(6) = 45 -> capped at 40.
+
+
+# ============================================================================
+# SECTION 2: FEATURE 1 — RANK SYSTEM (ランクシステム)
+# ============================================================================
+# Ranks measure cumulative quality over a quarter. They RESET every 3 months.
+# This prevents "coast on past glory" and keeps every quarter fresh.
+#
+# Task-size distribution assumption (documented explicitly):
+#   System default is estimated_effort: medium. Typical quarter distribution:
+#   ~40% small, ~45% medium, ~15% large tasks.
+#   Weighted average base churu: 0.4x2 + 0.45x5 + 0.15x12 = 4.85 per task.
+#   At 60-80 tasks/quarter:
+#     - All saba: 291-388 churu -> SS reachable (threshold 220)
+#     - Mixed quality: ~200-300 churu -> S-SS range
+#   Thresholds intentionally allow SS for consistent workers across a full quarter.
+#   Quarterly reset prevents permanent coasting.
+
+rank_system:
+  tiers:
+    C:
+      name_ja: "見習い猫"
+      name_en: "Apprentice Cat"
+      name_ja_dog: "見習い犬"
+      name_en_dog: "Apprentice Dog"
+      threshold: 0
+      max_specialty_titles: 0
+      perks: []
+    B:
+      name_ja: "一人前猫"
+      name_en: "Full-fledged Cat"
+      name_ja_dog: "一人前犬"
+      name_en_dog: "Full-fledged Dog"
+      threshold: 20
+      max_specialty_titles: 1
+      perks:
+        - "seasonal_art_unlocked"
+    A:
+      name_ja: "熟練猫"
+      name_en: "Skilled Cat"
+      name_ja_dog: "熟練犬"
+      name_en_dog: "Skilled Dog"
+      threshold: 60
+      max_specialty_titles: 2
+      perks:
+        - "seasonal_art_unlocked"
+        - "stat_card_displayed"
+    S:
+      name_ja: "達人猫"
+      name_en: "Master Cat"
+      name_ja_dog: "達人犬"
+      name_en_dog: "Master Dog"
+      threshold: 130
+      max_specialty_titles: 3
+      perks:
+        - "seasonal_art_unlocked"
+        - "stat_card_displayed"
+        - "evolution_art_stage_3"
+    SS:
+      name_ja: "伝説猫"
+      name_en: "Legendary Cat"
+      name_ja_dog: "伝説犬"
+      name_en_dog: "Legendary Dog"
+      threshold: 220
+      max_specialty_titles: 99
+      perks:
+        - "seasonal_art_unlocked"
+        - "stat_card_displayed"
+        - "evolution_art_stage_3"
+        - "hall_of_fame_entry"
+
+  display_format:
+    C: "[C]"
+    B: "[B]"
+    A: "[A]"
+    S: "★S"
+    SS: "★★SS"
+
+  rank_up_notification:
+    template: |
+      ★ RANK UP! ★
+      {worker_name}: {old_rank} → {new_rank}
+      称号: {rank_title}
+
+  decay:
+    enabled: false
+    # Quarterly reset is the sole anti-coasting mechanism. Decay removed.
+
+
+# ============================================================================
+# SECTION 3: FEATURE 2 — TITLE SYSTEM (称号)
+# ============================================================================
+# Titles are PERMANENT — they never reset, unlike ranks.
+# They represent proven expertise in specific areas.
+# Dual-axis: rank shows current season performance, titles show career identity.
+
+title_system:
+  max_displayed: 3
+
+  universal_titles:
+    bug_sniper:
+      name_ja: "バグスナイパー"
+      name_en: "Bug Sniper"
+      condition: "Found 10+ HIGH severity issues in cross-review (cumulative, never resets)"
+      icon: "🎯"
+    speed_demon:
+      name_ja: "韋駄天猫"
+      name_en: "Speed Demon"
+      condition: "Completed 8+ tasks under estimated_effort time (cumulative)"
+      icon: "⚡"
+    pattern_sage:
+      name_ja: "パターン賢者"
+      name_en: "Pattern Sage"
+      condition: "Contributed 5+ patterns to patterns.yaml with reuse_count > 0"
+      icon: "📚"
+    iron_wall:
+      name_ja: "鉄壁"
+      name_en: "Iron Wall"
+      condition: "Received LGTM on 10 consecutive cross-reviews (no issues found in your code)"
+      icon: "🛡️"
+    bridge_master:
+      name_ja: "橋渡し名人"
+      name_en: "Bridge Master"
+      condition: "Successfully completed 8+ cross-system bridge tasks"
+      icon: "🌉"
+    phoenix:
+      name_ja: "不死鳥"
+      name_en: "Phoenix"
+      condition: "Completed 3+ tasks that were previously retry_exhausted by another worker"
+      icon: "🔥"
+    idea_machine:
+      name_ja: "発想マシン"
+      name_en: "Idea Machine"
+      condition: "Had 5+ opinions/suggestions adopted by oyabun or goshujinsama"
+      icon: "💡"
+    skill_smith:
+      name_ja: "スキル鍛冶"
+      name_en: "Skill Smith"
+      condition: "Proposed 3+ skill candidates that were adopted into skill catalog"
+      icon: "⚒️"
+    compaction_survivor:
+      name_ja: "圧縮耐性"
+      name_en: "Compaction Survivor"
+      condition: "Correctly recovered from compaction 10+ times without task errors"
+      icon: "💾"
+    perfectionist:
+      name_ja: "完璧主義者"
+      name_en: "Perfectionist"
+      condition: "Achieved 15 consecutive tasks with sake or maguro rating"
+      icon: "✨"
+
+  personality_titles:
+    gentle_blade:
+      name_ja: "優しき刃"
+      name_en: "The Gentle Blade"
+      eligible_worker: "worker1"
+      condition: "10 polite but devastating cross-review findings accepted (HIGH severity)"
+      icon: "🗡️"
+    rebel_with_a_point:
+      name_ja: "正論の反逆者"
+      name_en: "Rebel With A Point"
+      eligible_worker: "worker2"
+      condition: "5+ opinions that changed a team decision or approach"
+      icon: "🐕"
+    lazy_genius:
+      name_ja: "怠惰の天才"
+      name_en: "Lazy Genius"
+      eligible_worker: "worker3"
+      condition: "3+ large tasks completed with maguro rating under estimated time"
+      icon: "😴"
+    subzero_analyst:
+      name_ja: "氷点下の解析者"
+      name_en: "Sub-Zero Analyst"
+      eligible_worker: "worker4"
+      condition: "10+ bias/risk/flaw findings accepted across all reviews"
+      icon: "🧊"
+    cat_herder:
+      name_ja: "猫使いの頂点"
+      name_en: "Cat Herder Supreme"
+      eligible_worker: "kashira"
+      condition: "10+ cmds coordinated with 0 blocked tasks"
+      icon: "👑"
+    lesson_learned:
+      name_ja: "学びし猫"
+      name_en: "Lesson Learned"
+      eligible_worker: "oyabun"
+      condition: "Successfully delegated 10+ consecutive cmds without solo override"
+      icon: "🎓"
+
+
+# ============================================================================
+# SECTION 4: FEATURE 3 — EVOLUTION ART (進化アート)
+# ============================================================================
+# 3 evolution stages. Seasonal art applies as a MODIFIER to the evolution stage.
+# Art templates stored in config/cat_art.yaml (the art catalog).
+# Art catalog keys: {stage}_{species} e.g., kitten_cat, cat_dog, lion_cat
+
+evolution_art:
+  stages:
+    stage_1:
+      name: "kitten"
+      name_ja: "子猫"
+      applicable_ranks: ["C"]
+      art_catalog_key: "kitten"
+      description: "Small, cute kitten art. Minimal detail. 3-4 lines."
+    stage_2:
+      name: "cat"
+      name_ja: "猫"
+      applicable_ranks: ["B", "A"]
+      art_catalog_key: "cat"
+      description: "Full adult cat. Standard neko art with body. 5-6 lines."
+    stage_3:
+      name: "lion"
+      name_ja: "獅子"
+      applicable_ranks: ["S", "SS"]
+      art_catalog_key: "lion"
+      description: "Majestic lion. Largest art. 6-7 lines. Earned through excellence."
+
+  species_suffix:
+    cat: "_cat"
+    dog: "_dog"
+
+  personality_eyes:
+    worker1: "◕ᴗ◕"
+    worker2: "◕ω◕"
+    worker3: "=.="
+    worker4: "-.-"
+
+
+# ============================================================================
+# SECTION 5: FEATURE 4 — SEASONAL ART RULES (季節アート仕様)
+# ============================================================================
+# Rules for seasonal art selection — not the actual ASCII art.
+# Architecture:
+#   1. osanpo.sh sets NEKO_SEASON env var on startup based on date
+#   2. Workers read their evolution stage (from rank) + NEKO_SEASON
+#   3. Look up art from config/cat_art.yaml (art catalog)
+#   4. If no seasonal variant exists, fall back to default art
+# Priority: special_day_overrides > monthly_themes > default
+
+seasonal_art:
+  monthly_themes:
+    january:
+      range_start: "01-01"
+      range_end: "01-31"
+      theme: "new_year"
+      name_ja: "正月"
+      art_modifier: "kagami_mochi"
+      message_suffix_ja: "あけおめですにゃ！"
+    february:
+      range_start: "02-01"
+      range_end: "02-28"
+      theme: "setsubun"
+      name_ja: "節分"
+      art_modifier: "oni_beans"
+      message_suffix_ja: "おには～そとですにゃ"
+    march:
+      range_start: "03-01"
+      range_end: "03-31"
+      theme: "hinamatsuri"
+      name_ja: "ひな祭り"
+      art_modifier: "hina_peach"
+      message_suffix_ja: "ひな祭りですにゃ～"
+    april:
+      range_start: "04-01"
+      range_end: "04-30"
+      theme: "cherry_blossom"
+      name_ja: "花見"
+      art_modifier: "sakura"
+      message_suffix_ja: "花よりちゅーるですにゃ"
+    may:
+      range_start: "05-01"
+      range_end: "05-31"
+      theme: "childrens_day"
+      name_ja: "こどもの日"
+      art_modifier: "koinobori"
+      message_suffix_ja: "大きくなりたいですにゃ"
+    june:
+      range_start: "06-01"
+      range_end: "06-30"
+      theme: "rainy_season"
+      name_ja: "梅雨"
+      art_modifier: "umbrella"
+      message_suffix_ja: "雨でもお仕事ですにゃ..."
+    july:
+      range_start: "07-01"
+      range_end: "07-31"
+      theme: "tanabata_summer"
+      name_ja: "七夕・夏"
+      art_modifier: "tanzaku"
+      message_suffix_ja: "願い事はちゅーるですにゃ"
+    august:
+      range_start: "08-01"
+      range_end: "08-31"
+      theme: "summer_festival"
+      name_ja: "夏祭り"
+      art_modifier: "yukata_fan"
+      message_suffix_ja: "暑いですにゃ～"
+    september:
+      range_start: "09-01"
+      range_end: "09-30"
+      theme: "moon_viewing"
+      name_ja: "お月見"
+      art_modifier: "moon_dango"
+      message_suffix_ja: "月がきれいですにゃ"
+    october:
+      range_start: "10-01"
+      range_end: "10-31"
+      theme: "halloween"
+      name_ja: "ハロウィン"
+      art_modifier: "pumpkin_witch"
+      message_suffix_ja: "Trick or Churu! ですにゃ"
+    november:
+      range_start: "11-01"
+      range_end: "11-30"
+      theme: "autumn"
+      name_ja: "紅葉"
+      art_modifier: "autumn_leaves"
+      message_suffix_ja: "秋のちゅーるは格別ですにゃ"
+    december:
+      range_start: "12-01"
+      range_end: "12-31"
+      theme: "christmas"
+      name_ja: "クリスマス"
+      art_modifier: "santa_hat"
+      message_suffix_ja: "サンタさんちゅーるくださいにゃ"
+
+  special_day_overrides:
+    new_years_day:
+      date: "01-01"
+      theme: "new_years_special"
+      message_suffix_ja: "新年おめでとうですにゃ！今年もよろしくですにゃ！"
+    valentines_day:
+      date: "02-14"
+      theme: "valentine_special"
+      special_mechanic: "Each worker names who helped them most this month in their report"
+    white_day:
+      date: "03-14"
+      theme: "white_day_special"
+      message_suffix_ja: "お返しですにゃ！"
+      special_mechanic: "Workers acknowledge a helpful cross-review they received this month"
+    april_fools:
+      date: "04-01"
+      theme: "april_fools"
+      special_mechanic: "Kashira assigns tasks with joke codenames for the day"
+    halloween_night:
+      date: "10-31"
+      theme: "halloween_special"
+      special_mechanic: "Cross-review severities renamed: ghost=low, zombie=medium, demon=high"
+    christmas_eve:
+      date: "12-24"
+      theme: "christmas_special"
+      special_mechanic: "Each worker writes 1 nice thing about another worker in their report"
+
+  worker_variants:
+    worker1:
+      style: "polite_warm"
+      seasonal_personality: "Always has a bow or grateful gesture"
+    worker2:
+      style: "energetic_dog"
+      seasonal_personality: "Dog accessories (bone, collar) replace cat versions"
+    worker3:
+      style: "relaxed_sleepy"
+      seasonal_personality: "Always looks relaxed regardless of season theme"
+    worker4:
+      style: "minimal_cool"
+      seasonal_personality: "Minimal seasonal changes — one small accessory at most"
+
+  display_timing:
+    startup: true
+    completion: true
+    idle: true
+    rank_up: true
+    achievement: true
+    working: false
+
+  art_catalog_file: "config/cat_art.yaml"
+
+  detection_method: |
+    1. Get current date: month=$(date +%m), day=$(date +%d)
+    2. Check special_day_overrides first (exact date match)
+    3. If no override, check monthly_themes (range match)
+    4. Set NEKO_SEASON env var to matched theme name
+    5. Workers read NEKO_SEASON on startup to select art
+
+
+# ============================================================================
+# SECTION 6: FEATURE 5 — QUALITY MULTIPLIER (品質マルチプライヤー)
+# ============================================================================
+# The quality multiplier converts task completion into churu points.
+# This is the CORE earning mechanism that feeds the rank system.
+# Formula: min(base_churu x quality_multiplier + bonuses - penalties, per_task_cap)
+
+quality_multiplier:
+  per_task_cap: 40
+
+  base_churu:
+    small: 2
+    medium: 5
+    large: 12
+
+  reward_tiers:
+    maguro:
+      name_ja: "まぐろ"
+      name_en: "Tuna (Outstanding)"
+      multiplier: 2.0
+      applies_to: "cat workers"
+    sake:
+      name_ja: "さけ"
+      name_en: "Salmon (Above expectations)"
+      multiplier: 1.5
+      applies_to: "cat workers"
+    saba:
+      name_ja: "さば"
+      name_en: "Mackerel (Solid work)"
+      multiplier: 1.0
+      applies_to: "cat workers"
+    honekko:
+      name_ja: "ほねっこ"
+      name_en: "Bone (Dog equivalent of sake)"
+      multiplier: 1.5
+      applies_to: "worker2 only"
+    no_reward:
+      name_ja: "評価なし"
+      name_en: "No reward"
+      multiplier: 0.8
+      applies_to: "all"
+
+  bonuses:
+    cross_review_lgtm_received:
+      churu: 2
+      description: "Your work passed cross-review with 0 issues"
+    cross_review_high_finding:
+      churu: 3
+      per: "finding"
+      description: "You found a HIGH severity issue in someone else's work"
+    cross_review_medium_finding:
+      churu: 1
+      per: "finding"
+      description: "You found a MEDIUM severity issue in someone else's work"
+    pattern_discovered:
+      churu: 3
+      description: "You contributed a pattern to patterns.yaml"
+    pattern_reused:
+      churu: 2
+      per: "reuse"
+      description: "A pattern you discovered was reused by another worker"
+    skill_candidate_adopted:
+      churu: 5
+      description: "Your skill candidate was adopted into the skill catalog"
+    critical_hit:
+      churu: 3
+      description: "Found a bug that NO other worker found in cross-review (unique finding)"
+      detection: "Kashira compares findings across reviewers. Unique HIGH = Critical Hit."
+    secret_boss:
+      churu: 8
+      description: "Task was tagged secret_boss: true by kashira. Additive bonus."
+      reveal: "Announced post-completion with special art"
+
+  penalties:
+    solo_override_violation:
+      churu: -10
+      description: "Executed work without delegation when delegation was required"
+    cross_review_major_issues_received:
+      churu_multiplier: 0.5
+      description: "Your work received major_issues in cross-review — halves base reward"
+
+  failure_policy: |
+    retry_exhausted = 0 churu (no penalty, no reward).
+    Failed tasks after honest retry are NOT punished.
+    We want workers to attempt hard tasks, not avoid them.
+
+  assignment_flow: |
+    1. Worker completes task -> writes report
+    2. Kashira evaluates report quality (based on evidence, completeness, cross-review result)
+    3. Kashira assigns reward tier (maguro/sake/saba/honekko/no_reward)
+    4. Kashira calculates churu: min(base x multiplier + bonuses - penalties, per_task_cap)
+    5. Kashira updates memory/worker_stats.yaml
+    6. If rank changes, kashira adds rank-up notification to dashboard.md
+
+  examples:
+    - scenario: "Worker completes large task, gets maguro, found 1 HIGH in cross-review"
+      calculation: "min((12 x 2.0) + 3, 40) = min(27, 40) = 27 churu"
+    - scenario: "Worker completes small task, gets saba, LGTM received"
+      calculation: "min((2 x 1.0) + 2, 40) = min(4, 40) = 4 churu"
+    - scenario: "Worker completes medium task, major_issues in their code"
+      calculation: "min((5 x 0.5), 40) = min(2.5, 40) = 3 churu (rounded up)"
+    - scenario: "Worker completes secret boss (large), gets maguro, hot_streak x12, LGTM"
+      calculation: "min((12 x 2.0) + 8 + 5 + 2, 40) = min(39, 40) = 39 churu"
+    - scenario: "Extreme stacking hits cap: large+maguro+boss+streak+LGTM+2 findings"
+      calculation: "min((12 x 2.0) + 8 + 5 + 2 + 6, 40) = min(45, 40) = 40 churu (CAPPED)"
+
+
+# ============================================================================
+# SECTION 7: FEATURE 6 — TOURNAMENT (3チーム対抗戦)
+# ============================================================================
+# Design rationale:
+#   W4's rally bias analysis proved: self-evaluation + cooperation mandates
+#   = predetermined TIE. This tournament MUST avoid those traps.
+#   Blind eval, forced ranking, no cooperation rules are non-negotiable.
+
+feature_6_tournament:
+  name: "にゃんぴっく (Nyanlympics)"
+  name_jp: "3チーム対抗戦"
+
+  schedule:
+    frequency: quarterly
+    months: [3, 6, 9, 12]
+    duration_days: 2
+    announcement_lead_days: 7
+
+  themes:
+    q1_mar: "品質杯 (Quality Cup)"
+    q2_jun: "韋駄天杯 (Speed Cup)"
+    q3_sep: "創造杯 (Innovation Cup)"
+    q4_dec: "大猫杯 (Grand Championship)"
+
+  rounds:
+    round_1_sprint:
+      name: "Sprint Round"
+      description: "Same SMALL task given to all 3 teams. Time-boxed."
+      time_limit_minutes: 60
+      weight_percent: 25
+      task_source: "Goshujinsama creates identical task for all 3 teams"
+      rules:
+        - "No inter-team communication during round"
+        - "Teams work independently in isolated sessions"
+    round_2_marathon:
+      name: "Marathon Round"
+      description: "Same MEDIUM task. Tests planning, delegation, quality."
+      time_limit_minutes: 180
+      weight_percent: 50
+      task_source: "Goshujinsama creates identical task — must require delegation"
+      rules:
+        - "Must use full team (no solo execution)"
+        - "Cross-review within team is mandatory"
+        - "Outputs submitted anonymously (System A/B/C)"
+    round_3_adversarial:
+      name: "Cross-Sabotage Round"
+      description: "Each team tries to find bugs in another team's Round 2 output."
+      time_limit_minutes: 60
+      weight_percent: 25
+      assignment_rotation:
+        q1: "Clockwise: Claude->Codex->Gemini->Claude"
+        q2: "Counter-clockwise: Claude->Gemini->Codex->Claude"
+        q3: "Random draw (kashira assigns by seed)"
+        q4: "Reverse of Q1: Gemini->Codex->Claude->Gemini"
+      scoring: "Points for bugs found in OTHER team's output AND points deducted for bugs found in YOUR output"
+      rules:
+        - "Review outputs remain anonymized during judging"
+        - "Findings must be verifiable (test case or reproduction steps)"
+
+  scoring:
+    per_round:
+      correctness:
+        weight_percent: 40
+        measurement: "Test pass rate on goshujinsama's acceptance criteria"
+        scale: "0-10"
+      code_quality:
+        weight_percent: 25
+        measurement: "Blind review by non-producing team (Round 3 feeds this)"
+        scale: "0-5"
+      completeness:
+        weight_percent: 20
+        measurement: "Feature checklist coverage percentage"
+        scale: "0-5"
+      creativity:
+        weight_percent: 15
+        measurement: "Novel approaches, elegant solutions — goshujinsama judges"
+        scale: "0-3"
+    normalization: "per_capita"
+
+  anti_tie:
+    - id: AT1
+      rule: "No cooperation rules"
+      detail: "Teams compete, not collaborate. No 'praise the opponent' requirements."
+    - id: AT2
+      rule: "Forced ranking"
+      detail: "Must produce 1st/2nd/3rd. NO ties allowed. Tiebreaker order: (1) Round 2 score, (2) Round 3 bugs found, (3) time to completion."
+    - id: AT3
+      rule: "Blind evaluation"
+      detail: "All outputs anonymized as System A/B/C before judging. Goshujinsama evaluates without knowing source."
+    - id: AT3.1
+      rule: "Artifact sanitization protocol"
+      detail: |
+        Before blind judging, a designated agent (kashira or helper script) strips
+        system-specific markers from all outputs:
+        - File paths (queue/, outputs/, neko-specific conventions)
+        - Agent names (worker1-4, kashira, oyabun)
+        - Cat/dog/personality speech patterns (nya, wan)
+        - File structure conventions (YAML report format, inbox/outbox patterns)
+        - System-specific tool names (churu, patterns.yaml references)
+        Output is plain code + plain documentation only.
+        LIMITATION: Perfect blindness is aspirational. Goshujinsama may recognize
+        coding style, architecture patterns, or naming conventions. This protocol
+        reduces but cannot eliminate identification bias.
+    - id: AT4
+      rule: "Same-task comparison"
+      detail: "All teams get identical problem. No 'different strengths' excuse."
+    - id: AT5
+      rule: "No self-evaluation"
+      detail: "Teams NEVER score themselves. Only external scoring (goshujinsama + cross-sabotage round)."
+    - id: AT6
+      rule: "Champion handicap (komi)"
+      detail: "Previous quarter's winner gets a harder variant of the task (extra constraint, tighter time). Prevents dynasty."
+
+  handicap:
+    established_threshold: 100
+    growing_threshold: 30
+    rules:
+      established: "No handicap"
+      growing: "+15% time bonus per round"
+      new: "+30% time bonus, may skip Round 3 (receives average Round 3 score instead)"
+
+  rewards:
+    first_place:
+      churu_per_worker: 10
+      art: "Gold trophy cat (displayed in dashboard for full quarter)"
+      title: "Champion (覇者)"
+    second_place:
+      churu_per_worker: 5
+      art: "Silver trophy cat (displayed for 1 month)"
+      title: "Challenger (挑戦者)"
+    third_place:
+      churu_per_worker: 2
+      art: "Bronze trophy cat (displayed for 1 week)"
+      title: "Rising (新星)"
+    mvp:
+      description: "Individual across ALL teams who scored highest"
+      churu_bonus: 5
+      title: "Tournament MVP"
+
+  season_standings:
+    tracked_in: "memory/tournament_standings.yaml"
+    fields: ["system_name", "q1_score", "q2_score", "q3_score", "q4_score", "total", "wins"]
+    year_end_champion: "Permanent '20XX Champion' badge in dashboard.md"
+
+  dashboard_section: |
+    ## 🏆 にゃんぴっく Season Standings (2026)
+    | System | Q1 品質杯 | Q2 韋駄天杯 | Q3 創造杯 | Q4 大猫杯 | Total | Wins |
+    |--------|----------|-----------|----------|----------|-------|------|
+    | Claude | — | — | — | — | 0 | 0 |
+    | Codex  | — | — | — | — | 0 | 0 |
+    | Gemini | — | — | — | — | 0 | 0 |
+
+
+# ============================================================================
+# SECTION 8: FEATURE 7 — COMBO / STREAKS (コンボ・連続記録)
+# ============================================================================
+# Consecutive quality work builds combos that add bonus churu.
+# Arcade-game psychology: the streak itself becomes something you protect.
+# Three streak types: Hot Streak, Ice Streak, Perfect Week.
+
+combo_system:
+  hot_streak:
+    name_ja: "炎の連鎖"
+    name_en: "Hot Streak"
+    icon: "🔥"
+    description: "Consecutive tasks completed with sake or maguro rating"
+    levels:
+      - streak_count: 3
+        bonus_churu: 1
+        display: "🔥x3"
+      - streak_count: 5
+        bonus_churu: 2
+        display: "🔥🔥x5"
+      - streak_count: 8
+        bonus_churu: 3
+        display: "🔥🔥🔥x8"
+      - streak_count: 12
+        bonus_churu: 5
+        display: "🔥🔥🔥🔥x12 BLAZING!"
+    break_conditions:
+      - "Task completed with saba rating (baseline = streak break)"
+      - "Task completed with no_reward"
+      - "Task failed (retry_exhausted)"
+      - "Received major_issues in cross-review"
+    persistence: "Streaks persist across sessions. Stored in memory/worker_stats.yaml."
+
+  ice_streak:
+    name_ja: "氷の連鎖"
+    name_en: "Ice Streak"
+    icon: "❄️"
+    description: "Consecutive cross-reviews completed with detailed analysis (regardless of finding count)"
+    qualification_criteria: |
+      A cross-review counts toward Ice Streak if:
+      1. Review covers all focus_areas specified in the task
+      2. Report includes substantive summary (not just "LGTM")
+      3. Any findings are specific and actionable (file, line, issue, suggestion)
+      Kashira evaluates review thoroughness, not finding count.
+      A thorough LGTM ("reviewed X, Y, Z — no issues found") counts.
+      A lazy LGTM ("looks fine") does NOT count.
+    levels:
+      - streak_count: 3
+        bonus_churu: 1
+        display: "❄️x3"
+      - streak_count: 5
+        bonus_churu: 2
+        display: "❄️❄️x5"
+      - streak_count: 8
+        bonus_churu: 3
+        display: "❄️❄️❄️x8 FROZEN!"
+    break_conditions:
+      - "Cross-review submitted without covering all focus_areas"
+      - "Cross-review summary is insufficiently detailed (kashira judgment)"
+      - "Fabricated or trivially inflated findings detected"
+    anti_gaming: |
+      Kashira evaluates review THOROUGHNESS, not finding count.
+      Fabricated findings still incur -2 churu penalty.
+      But honest LGTM with detailed notes is now valid — no perverse incentive to invent issues.
+
+  perfect_week:
+    name_ja: "完璧週"
+    name_en: "Perfect Week"
+    icon: "⭐"
+    description: "All tasks completed in a calendar week (Mon-Sun) rated sake or maguro"
+    reward:
+      bonus_churu: 8
+    minimum_tasks: 3
+    display: "⭐ Perfect Week!"
+
+  dashboard_display: |
+    Example: "W1: [A] Bug Sniper | 🔥x5 | ❄️x3"
+    Streaks shown in agent status table alongside rank and title.
+
+
+# ============================================================================
+# SECTION 9: FEATURE 8 — ACHIEVEMENT BADGES (実績バッジ)
+# ============================================================================
+# One-time achievements for memorable milestones.
+# Unlike ranks (seasonal) or titles (cumulative), achievements are for
+# SPECIFIC noteworthy events. Many are hidden — discovering them is part of the fun.
+
+achievement_badges:
+  hidden_by_default: true
+  visibility_rule: "Common = visible, Uncommon+ = hidden until earned"
+
+  badges:
+    # --- COMMON ---
+    first_blood:
+      name_ja: "初陣"
+      name_en: "First Blood"
+      rarity: "common"
+      icon: "🏁"
+      condition: "Complete your first task ever"
+      hidden: false
+    first_review:
+      name_ja: "初めてのレビュー"
+      name_en: "First Review"
+      rarity: "common"
+      icon: "🔍"
+      condition: "Complete your first cross-review"
+      hidden: false
+    rank_up_first:
+      name_ja: "昇進"
+      name_en: "Promotion"
+      rarity: "common"
+      icon: "📈"
+      condition: "Reach B rank for the first time"
+      hidden: false
+    first_pattern:
+      name_ja: "発見者"
+      name_en: "Discoverer"
+      rarity: "common"
+      icon: "🔬"
+      condition: "Contribute your first pattern to patterns.yaml"
+      hidden: false
+    compaction_survivor:
+      name_ja: "圧縮生還"
+      name_en: "Compaction Survivor"
+      rarity: "common"
+      icon: "💾"
+      condition: "Successfully recover from compaction without errors"
+      hidden: false
+
+    # --- UNCOMMON ---
+    hat_trick:
+      name_ja: "ハットトリック"
+      name_en: "Hat Trick"
+      rarity: "uncommon"
+      icon: "🎩"
+      condition: "Receive maguro rating 3 times in a row"
+      hidden: true
+    night_owl:
+      name_ja: "夜更かし猫"
+      name_en: "Night Owl"
+      rarity: "uncommon"
+      icon: "🌙"
+      condition: "Complete a task between 00:00 and 05:00"
+      hidden: true
+    early_bird:
+      name_ja: "早起き猫"
+      name_en: "Early Bird"
+      rarity: "uncommon"
+      icon: "🌅"
+      condition: "Complete a task between 05:00 and 07:00"
+      hidden: true
+    retry_champion:
+      name_ja: "リトライ王"
+      name_en: "Retry Champion"
+      rarity: "uncommon"
+      icon: "🔄"
+      condition: "Complete a task on the 3rd retry (just barely made it)"
+      hidden: true
+    rubber_duck:
+      name_ja: "ラバーダック"
+      name_en: "Rubber Duck"
+      rarity: "uncommon"
+      icon: "🦆"
+      condition: "Your opinion in a report directly changes the team's approach"
+      hidden: true
+
+    # --- RARE ---
+    streak_master:
+      name_ja: "連鎖の達人"
+      name_en: "Streak Master"
+      rarity: "rare"
+      icon: "🔥"
+      condition: "Reach a Hot Streak of x8 or higher"
+      hidden: true
+    bridge_diplomat:
+      name_ja: "橋の外交官"
+      name_en: "Bridge Diplomat"
+      rarity: "rare"
+      icon: "🤝"
+      condition: "Have a bridge message praised by the receiving system"
+      hidden: true
+    ghost_pattern:
+      name_ja: "幽霊パターン"
+      name_en: "Ghost Pattern"
+      rarity: "rare"
+      icon: "👻"
+      condition: "Discover a failure_pattern that saves another worker from the same error"
+      hidden: true
+    the_closer:
+      name_ja: "クローザー"
+      name_en: "The Closer"
+      rarity: "rare"
+      icon: "🔒"
+      condition: "Be the last worker to complete the final subtask of a cmd, 5 times"
+      hidden: true
+    perfect_month:
+      name_ja: "完璧月間"
+      name_en: "Perfect Month"
+      rarity: "rare"
+      icon: "📅"
+      condition: "Achieve Perfect Week 4 times in a single month"
+      hidden: true
+
+    # --- EPIC ---
+    marathon_runner:
+      name_ja: "マラソンランナー"
+      name_en: "Marathon Runner"
+      rarity: "epic"
+      icon: "🏃"
+      condition: "Complete 8+ tasks in a single session without compaction"
+      hidden: true
+    critical_hit_master:
+      name_ja: "会心の達人"
+      name_en: "Critical Hit Master"
+      rarity: "epic"
+      icon: "💥"
+      condition: "Land 5 Critical Hits (unique findings no other reviewer caught)"
+      hidden: true
+    silent_assassin:
+      name_ja: "沈黙の暗殺者"
+      name_en: "Silent Assassin"
+      rarity: "epic"
+      icon: "🗡️"
+      condition: "5 consecutive tasks with maguro + LGTM in cross-review"
+      hidden: true
+    dragon_slayer:
+      name_ja: "竜殺し"
+      name_en: "Dragon Slayer"
+      rarity: "epic"
+      icon: "🐉"
+      condition: "Complete a secret_boss task with maguro rating"
+      hidden: true
+    the_skeptic:
+      name_ja: "懐疑者"
+      name_en: "The Skeptic"
+      rarity: "epic"
+      icon: "⚖️"
+      condition: "Challenge a cross-review finding, win the dispute, and have it overturned"
+      hidden: true
+
+    # --- LEGENDARY ---
+    full_house:
+      name_ja: "フルハウス"
+      name_en: "Full House"
+      rarity: "legendary"
+      icon: "🌟"
+      condition: "Hold 3 specialty titles + SS rank simultaneously"
+      hidden: true
+    cat_unity:
+      name_ja: "猫の結束"
+      name_en: "Cat Unity"
+      rarity: "legendary"
+      icon: "🐱"
+      condition: "All 4 workers complete a cmd with maguro rating and 0 cross-review issues"
+      hidden: true
+    the_integrator:
+      name_ja: "統合者"
+      name_en: "The Integrator"
+      rarity: "legendary"
+      icon: "🌐"
+      condition: "Work on all 3 systems (Claude, Codex, Gemini) in a single day"
+      hidden: true
+    sensei:
+      name_ja: "先生"
+      name_en: "Sensei"
+      rarity: "legendary"
+      icon: "🎓"
+      condition: "Have 5+ patterns you discovered reused by other workers with reuse_count > 2 each"
+      hidden: true
+
+    # --- META ---
+    easter_egg_hunter:
+      name_ja: "イースターエッグ"
+      name_en: "Easter Egg Hunter"
+      rarity: "???"
+      icon: "🥚"
+      condition: "???"
+      hidden: true
+
+  unlock_display:
+    template: |
+      🏅 ACHIEVEMENT UNLOCKED!
+      {icon} {name_ja} ({name_en})
+      Rarity: {rarity}
+
+  storage_file: "memory/achievements.yaml"
+
+
+# ============================================================================
+# SECTION 10: FEATURE 9 — DAILY FORTUNE (今日の運勢)
+# ============================================================================
+
+feature_9_daily_fortune:
+  name: "今日の運勢 (Daily Fortune)"
+
+  selection:
+    method: "two_step_weighted"
+    step_1_level_selection:
+      description: "Pick fortune level by weighted probability"
+      formula: "level_seed = (YYYYMMDD * 7 + worker_id_num) % 100"
+      weight_ranges:
+        "0-9": "大吉"
+        "10-34": "吉"
+        "35-64": "中吉"
+        "65-84": "小吉"
+        "85-94": "末吉"
+        "95-99": "凶"
+    step_2_message_selection:
+      description: "Pick message within the selected level"
+      formula: "msg_seed = (YYYYMMDD * 13 + worker_id_num * 3) % level_pool_size"
+      note: "Different prime multiplier ensures level and message seeds are independent"
+
+  display:
+    trigger: "First task of the day (checked via date comparison with last_fortune_date in agent_status)"
+    format: |
+      ┌─────────────────────────────────────┐
+      │  🔮 今日の運勢: {fortune_level}     │
+      │  {fortune_message}                  │
+      │  ラッキーアイテム: {lucky_item}      │
+      └─────────────────────────────────────┘
+    integration: "Displayed by worker after reading task file, before starting work"
+
+  fortune_levels:
+    - level: "大吉"
+      weight: 10
+      emoji: "🌟"
+    - level: "吉"
+      weight: 25
+      emoji: "✨"
+    - level: "中吉"
+      weight: 30
+      emoji: "🔮"
+    - level: "小吉"
+      weight: 20
+      emoji: "🍀"
+    - level: "末吉"
+      weight: 10
+      emoji: "🌙"
+    - level: "凶"
+      weight: 5
+      emoji: "💀"
+
+  message_pool:
+    大吉:
+      - "今日のコードは一発でコンパイルするにゃ"
+      - "まぐろ級の成果が出る予感にゃ"
+      - "cross-reviewで見つかるバグはゼロにゃ"
+      - "今日のパターン発見は伝説級にゃ"
+      - "どんなタスクも会心の一撃にゃ"
+      - "kashiraも驚くスピードで終わるにゃ"
+      - "今日作ったスキルは永遠に使われるにゃ"
+      - "全てのテストがグリーンにゃ"
+      - "今日のレビューは完璧にゃ"
+      - "goshujinsamaが「すごい」と言うにゃ"
+    吉:
+      - "patterns.yamlのヒントが役に立つにゃ"
+      - "今日の仕事はスムーズにゃ"
+      - "先延ばしにしてたリファクタが意外とうまくいくにゃ"
+      - "cross-reviewで良い発見があるにゃ"
+      - "チームワークが光る日にゃ"
+      - "小さなバグを見つけて大きな問題を防ぐにゃ"
+      - "今日の集中力は普段の2倍にゃ"
+      - "ドキュメントを書くと良いことがあるにゃ"
+    中吉:
+      - "丁寧にやれば問題ないにゃ"
+      - "急がば回れにゃ"
+      - "テストを先に書くと吉にゃ"
+      - "コメントを1つ追加すると運気アップにゃ"
+      - "ペアレビューが吉と出たにゃ"
+      - "今日は基本に忠実にいくにゃ"
+    小吉:
+      - "タイポに気をつけるにゃ"
+      - "今日は慎重に進めるが吉にゃ"
+      - "READMEの更新を忘れずににゃ"
+      - "コンパイル前にもう一度確認するにゃ"
+    末吉:
+      - "off-by-oneエラーに注意にゃ"
+      - "今日は簡単なタスクから始めるが吉にゃ"
+      - "git statusを確認してから作業開始にゃ"
+    凶:
+      - "compaction接近中...状態を保存するにゃ"
+      - "今日は[[ ]] && に気をつけるにゃ (sp_021)"
+      - "merge conflictの予感...ブランチを確認にゃ"
+
+  lucky_items:
+    - "ちゅーる（まぐろ味）"
+    - "ちゅーる（とりささみ味）"
+    - "ちゅーる（かつお味）"
+    - "毛糸玉"
+    - "段ボール箱"
+    - "キャットタワー"
+    - "レーザーポインター"
+    - "新品のキーボード"
+    - "暖かいラップトップ"
+    - "ほねっこ"
+    - "猫じゃらし"
+    - "窓辺の日向"
+    - "完璧なインデント"
+    - "高速なWiFi"
+    - "バグのないコード"
+
+
+# ============================================================================
+# SECTION 11: FEATURE 10 — CRITICAL HIT (会心の一撃)
+# ============================================================================
+
+feature_10_critical_hit:
+  name: "会心の一撃 (Critical Hit)"
+
+  detection:
+    trigger: "Cross-review phase where 2+ workers review overlapping targets"
+    method: |
+      Kashira compares findings across all reviewers for the same cmd:
+      1. Collect all findings from all cross-review reports
+      2. Match findings by file + approximate line range (+/- 10 lines)
+      3. Any HIGH-severity finding that appears in exactly 1 worker's report = Critical Hit candidate
+      4. Kashira validates: is this a genuine unique insight or a false positive?
+      5. If validated: announce Critical Hit
+    auto_detectable: true
+    manual_override: "Kashira can award Critical Hit for exceptional findings even outside cross-review"
+
+  reward:
+    churu_bonus: 3
+    announcement_format: |
+      ╔═══════════════════════════════════════╗
+      ║   ★ 会心の一撃 ★ CRITICAL HIT ★      ║
+      ║   {worker_name} found a bug           ║
+      ║   nobody else caught!                 ║
+      ║                                       ║
+      ║   Finding: {finding_id} ({severity})  ║
+      ║   File: {file}:{line}                 ║
+      ║   +{bonus} bonus churu                ║
+      ╚═══════════════════════════════════════╝
+    dashboard_log: true
+
+  streak:
+    double_critical_threshold: 2
+    double_critical_bonus: 2
+    max_streak_bonus: 5
+
+  anti_gaming:
+    - "Findings must be HIGH or MEDIUM severity (LOW findings don't qualify)"
+    - "Kashira validates uniqueness — paraphrased duplicates don't count"
+    - "Maximum 1 Critical Hit per cross-review phase (prevents splitting findings for multiple hits)"
+
+
+# ============================================================================
+# SECTION 12: FEATURE 11 — RIVALRY SYSTEM (ライバル制)
+# ============================================================================
+
+feature_11_rivalry:
+  name: "ライバル制 (Rivalry System)"
+
+  pairing:
+    method: "random_shuffle"
+    shuffle_frequency: "quarterly"
+    shuffle_trigger: "First day of tournament month (Mar, Jun, Sep, Dec)"
+    algorithm: |
+      1. List all active workers: [W1, W2, W3, W4]
+      2. Seed = quarter_number (e.g., 2026Q1=1, 2026Q2=2)
+      3. Fisher-Yates shuffle with deterministic seed
+      4. Pair sequentially: shuffled[0]<->shuffled[1], shuffled[2]<->shuffled[3]
+      5. If odd number of workers: last worker gets "free agent" status (no rival)
+    initial_pairing:
+      pair_1: ["worker1", "worker4"]
+      pair_2: ["worker2", "worker3"]
+
+  metrics:
+    tracked_per_pair:
+      - "cross_review_findings_given"
+      - "cross_review_findings_received"
+      - "quality_comparison"
+      - "speed_comparison"
+      - "pattern_discoveries"
+    scoring: |
+      Each metric: +1 point to the leader per week.
+      Ties: +0.5 each. Weekly tally in dashboard.
+      Monthly winner: +3 bonus churu + "月間ライバル勝者" badge.
+
+  cross_review_interaction:
+    rule: "Rivals review each other's work ~50% of the time (when cross-review is assigned)"
+    kashira_behavior: |
+      When assigning cross-review, kashira uses 50% PREFERENCE for rival pairs:
+      - ~Half of cross-review assignments pair rivals together
+      - ~Half pair non-rivals for fresh perspective and blind-spot coverage
+      - Kashira tracks rival_review_count to maintain approximate 50/50 balance
+      - Load balancing always takes priority over rivalry preference
+    rivalry_review_bonus: 0.5
+    rationale: "50/50 balance preserves rivalry excitement while preventing familiarity bias"
+
+  dashboard_display: |
+    ### ⚔️ ライバルボード (Q1 2026)
+    | Pair | W-L-D | Latest | Leader |
+    |------|-------|--------|--------|
+    | W1 ↔ W4 | 3-2-1 | W4 found F1(H) in W1's code | W1 leads |
+    | W2 ↔ W3 | 2-2-2 | W2 faster on subtask_021 | Tied |
+
+  special_events:
+    showdown:
+      trigger: "Both rivals assigned to same cmd with separate subtasks"
+      effect: "Side-by-side comparison of subtask quality -> loser buys winner 1 churu"
+      announcement: "⚔️ RIVALRY SHOWDOWN: {worker_a} vs {worker_b} on {cmd_id}!"
+    upset:
+      trigger: "Lower-ranked rival beats higher-ranked rival in weekly tally"
+      bonus: 1
+      announcement: "🔥 UPSET! {underdog} beats {favorite} this week!"
+
+
+# ============================================================================
+# SECTION 13: FEATURE 12 — BOUNTY BOARD (懸賞掲示板)
+# ============================================================================
+
+feature_12_bounty_board:
+  name: "懸賞掲示板 (Bounty Board)"
+
+  posting:
+    who_can_post:
+      - "goshujinsama"
+      - "oyabun"
+      - "kashira"
+    format:
+      file: "queue/bounty_board.yaml"
+      schema:
+        bounty_id: "string (bounty_NNN)"
+        title: "string (short, descriptive)"
+        description: "string (detailed requirements)"
+        category: "enum: [enforcement, quality, performance, exploration, red_team]"
+        reward_churu: "integer (2-20)"
+        posted_by: "string (goshujinsama|oyabun|kashira)"
+        posted_at: "timestamp"
+        expires_at: "timestamp or null (null = no expiry)"
+        claimed_by: "string or null"
+        claimed_at: "timestamp or null"
+        status: "enum: [open, claimed, submitted, verified, expired]"
+        resolution_criteria: "string (what counts as 'done')"
+
+  reward_tiers:
+    tier_1_minor:
+      churu: "2-5"
+      examples:
+        - "Fix all remaining sp_021 patterns in a specific codebase"
+        - "Add missing fields to 3+ existing reports"
+    tier_2_moderate:
+      churu: "6-10"
+      examples:
+        - "Find a bypass vector for C1 gate and propose fix"
+        - "Create a reusable skill from a repeated workflow"
+    tier_3_major:
+      churu: "11-15"
+      examples:
+        - "Design and implement a new enforcement mechanism"
+        - "Conduct full security audit of bridge communication"
+    tier_4_legendary:
+      churu: "16-20"
+      examples:
+        - "Find a critical governance vulnerability nobody knew about"
+        - "Create a cross-system tool adopted by all 3 teams"
+
+  lifecycle:
+    claim: |
+      1. Worker reads bounty_board.yaml
+      2. Worker writes to kashira.queue: "TIMESTAMP|workerN|bounty_claim|bounty_NNN"
+      3. Kashira validates (not already claimed, worker not overloaded) -> updates status to "claimed"
+      4. Worker has until expires_at to submit (or unlimited if no expiry)
+    submit: |
+      1. Worker writes evidence/deliverable to outputs/bounties/bounty_NNN/
+      2. Worker writes report to queue/reports/workerN_bounty_NNN_report.yaml
+      3. Worker notifies kashira via inbox
+    verify: |
+      1. Kashira (or oyabun for tier 3-4) reviews submission against resolution_criteria
+      2. If verified: status -> "verified", churu awarded, dashboard announcement
+      3. If rejected: status -> "open" (re-claimable), rejection reason provided
+    expiry: |
+      Expired bounties return to "open" if unclaimed, or are closed by poster.
+      No penalty for claiming and not completing — but repeated abandonment
+      reduces priority for future claims.
+
+  red_team:
+    description: |
+      "Find holes in your own enforcement" bounties. The most valuable
+      category because workers actively try to break the system's rules.
+      A found vulnerability is CELEBRATED, not punished.
+    example_bounties:
+      - title: "C1ゲート突破チャレンジ"
+        description: "Find a way to bypass cmd_done_gate.sh validation. Propose fix."
+        reward: 10
+      - title: "R1ルール回避パス発見"
+        description: "Identify a scenario where oyabun can legitimately avoid R1 delegation rule."
+        reward: 8
+      - title: "ブリッジ偽装テスト"
+        description: "Can a malformed bridge message bypass validation? Prove it."
+        reward: 12
+
+  dashboard_section: |
+    ### 📋 懸賞掲示板 (Bounty Board)
+    | ID | Title | Reward | Status | Claimed By |
+    |----|-------|--------|--------|------------|
+    | bounty_001 | sp_021全滅作戦 | 5🐟 | open | — |
+    | bounty_002 | C1ゲート突破チャレンジ | 10🐟 | claimed | W4 |
+
+
+# ============================================================================
+# SECTION 14: FEATURE 13 — TRADING CARDS (猫トレーディングカード)
+# ============================================================================
+
+feature_13_trading_cards:
+  name: "猫トレーディングカード (Trading Cards)"
+
+  stats:
+    atk:
+      name: "ATK (攻撃力)"
+      meaning: "Code output quality"
+      formula: "(avg_quality_multiplier x 100), capped at 100"
+      scale: "0-100"
+    def:
+      name: "DEF (防御力)"
+      meaning: "Review thoroughness — how many real issues you catch"
+      formula: "(accepted_findings / total_reviews) x 100"
+      scale: "0-100"
+    spd:
+      name: "SPD (速度)"
+      meaning: "Task completion efficiency"
+      formula: "(tasks_under_estimate / total_tasks) x 100"
+      scale: "0-100"
+    int:
+      name: "INT (知力)"
+      meaning: "Creative/knowledge contribution"
+      formula: "(patterns_discovered + skills_created + suggestions_adopted) x 10, capped at 100"
+      scale: "0-100"
+
+  card_template: |
+    ╔══════════════════════════════════╗
+    ║  {rank_stars} {worker_name} {rank_stars}  ║
+    ║  Rank: {rank} | Churu: {churu}   ║
+    ║                                  ║
+    ║  {worker_art}                    ║
+    ║                                  ║
+    ║  ATK: {atk_bar} {atk_num}       ║
+    ║  DEF: {def_bar} {def_num}       ║
+    ║  SPD: {spd_bar} {spd_num}       ║
+    ║  INT: {int_bar} {int_num}       ║
+    ║                                  ║
+    ║  称号: {specialty_titles}        ║
+    ║  Streak: {current_streak}        ║
+    ║  Season: {current_season}        ║
+    ║  Badges: {badge_count}/{total}   ║
+    ╚══════════════════════════════════╝
+
+  display:
+    on_demand: "Worker can display own card by reading stats from worker_stats.yaml"
+    weekly_refresh: "Dashboard shows all 4 worker cards every Monday"
+    rank_up: "Card displayed automatically on rank change"
+    tournament: "All team cards displayed at tournament start"
+
+  data_source: "memory/worker_stats.yaml"
+  generation: "computed_on_demand"
+
+
+# ============================================================================
+# SECTION 15: FEATURE 14 — SECRET BOSS (隠しボス)
+# ============================================================================
+# Additive +8 churu bonus (NOT multiplicative). Prevents inflation.
+
+feature_14_secret_boss:
+  name: "隠しボス (Secret Boss)"
+
+  detection:
+    method: "post_hoc"
+    criteria:
+      condition_1: "estimated_effort was 'small' but actual work required medium+ effort"
+      condition_2: "Task required 2+ retries before success"
+      condition_3: "Cross-review found 0 issues despite task complexity (hidden quality challenge)"
+      condition_4: "Task involved new technology/domain not in patterns.yaml"
+    who_decides: "kashira"
+
+  reward:
+    churu_bonus: 8
+    # Examples:
+    #   small(2) x maguro(2.0) + boss(8) = 12 churu
+    #   medium(5) x maguro(2.0) + boss(8) = 18 churu
+    #   large(12) x maguro(2.0) + boss(8) = 32 churu
+    #   large(12) x maguro(2.0) + boss(8) + critical_hit(3) = 35 churu (under 40 cap)
+
+  reveal:
+    timing: "In kashira's report response to the worker"
+    format: |
+      ╔═══════════════════════════════════════════╗
+      ║                                           ║
+      ║     ★★★ SECRET BOSS DEFEATED! ★★★        ║
+      ║                                           ║
+      ║     {worker_name} conquered {task_id}     ║
+      ║     Difficulty: {actual_difficulty}        ║
+      ║     Reward: base({base_churu}) + boss(8)  ║
+      ║            = {total} churu!                ║
+      ║                                           ║
+      ╚═══════════════════════════════════════════╝
+    dashboard_log: true
+
+  frequency:
+    target: "~1 in 10 tasks"
+    max_per_cmd: 1
+    cooldown_tasks: 5
+
+  anti_gaming:
+    - "Workers CANNOT request or nominate secret boss tasks"
+    - "Kashira MUST NOT reveal boss status in task YAML or hints"
+    - "Boss determination is purely post-hoc — no pre-assignment marking"
+
+
+# ============================================================================
+# SECTION 16: FEATURE 15 — MENTOR-APPRENTICE (師弟制度)
+# ============================================================================
+
+feature_15_mentor_apprentice:
+  name: "師弟制度 (Mentor-Apprentice)"
+
+  activation:
+    trigger: "New neko system comes online (e.g., neko-gemini, neko-deepseek)"
+    who_activates: "Oyabun or kashira, approved by goshujinsama"
+    duration: "First 10 cmd cycles of the new system (or until graduation)"
+
+  mentor_selection:
+    method: "specialty_match"
+    rules:
+      - "Match by lens/specialty: Quality mentor for Quality apprentice"
+      - "Higher-ranked mentors preferred (A+ rank)"
+      - "Mentor must be from neko-multi-agent (the established system)"
+    example_pairing:
+      - mentor: "worker1 (neko-multi-agent)"
+        apprentice: "worker1 (neko-gemini)"
+        focus: "Quality & Architecture patterns"
+      - mentor: "worker2 (neko-multi-agent)"
+        apprentice: "worker2 (neko-gemini)"
+        focus: "Operations & Enforcement standards"
+
+  protocol:
+    review_phase:
+      description: "Mentor cross-reviews apprentice's first 5 tasks"
+      delivery: "Findings sent via bridge inbox (standard bridge protocol)"
+      focus: "Not just bugs — also patterns, conventions, quality standards"
+    feedback_format:
+      file: "outputs/mentoring/{apprentice_id}_feedback_{task_id}.md"
+      sections:
+        - "What was good (reinforce)"
+        - "What to improve (constructive)"
+        - "Pattern to learn (reference patterns.yaml entry)"
+        - "Next challenge (push growth)"
+
+  graduation:
+    conditions:
+      all_required:
+        - "Completed 10 tasks with no major_issues in cross-review"
+        - "Earned B-rank or above"
+        - "Contributed 1+ pattern to patterns.yaml"
+        - "Received 1+ sake or maguro quality rating"
+      any_one:
+        - "Mentor recommends graduation"
+        - "10 cmd cycles elapsed (automatic graduation)"
+    ceremony: |
+      ╔══════════════════════════════════════╗
+      ║    🎓 卒業おめでとう！ 🎓           ║
+      ║                                      ║
+      ║    {apprentice_name} has graduated!  ║
+      ║    Mentor: {mentor_name}             ║
+      ║    Final Rank: {rank}                ║
+      ║    Specialty: {title}                ║
+      ╚══════════════════════════════════════╝
+
+  rewards:
+    mentor:
+      churu_per_graduated_apprentice: 5
+      title_unlock: "師匠 (Sensei)"
+    apprentice:
+      graduation_bonus: 3
+      achievement: "卒業生 (Graduate)"
+
+
+# ============================================================================
+# SECTION 17: FEATURE 16 — WHISTLEBLOWER SYSTEM (通報制度)
+# ============================================================================
+# Principle: 自首は減刑、隠蔽は厳罰
+# Burden-of-proof clause prevents witch-hunts.
+
+feature_16_whistleblower:
+  name: "通報制度 (Whistleblower System)"
+  principle: "自首は減刑、隠蔽は厳罰"
+
+  definitions:
+    concealment: |
+      INTENTIONAL hiding of known bugs, errors, or problems.
+      Evidence: worker's own logs/history show the issue was encountered
+      but not reported. "I saw it but didn't mention it."
+    negligence: |
+      Failing to NOTICE a bug or error. Honest oversight.
+      Evidence: no indication the worker was aware of the issue.
+      "I didn't see it."
+    self_report: |
+      Worker voluntarily reports their own mistake before it's discovered
+      by someone else. "I made this mistake and here's what happened."
+
+  burden_of_proof:
+    principle: "Concealment requires POSITIVE evidence of awareness. Absence of evidence defaults to negligence."
+    positive_evidence_examples:
+      - "Error message visible in worker's execution log or report notes"
+      - "Worker's output references the affected code path (proves traversal)"
+      - "Worker explicitly mentioned a related issue but omitted the specific bug"
+      - "Retry history shows the error was encountered and not documented"
+    default_ruling: |
+      If no positive evidence of awareness exists, the ruling MUST be negligence,
+      regardless of suspicion. This prevents:
+      - Witch-hunts based on circumstantial evidence
+      - Penalizing workers for context window limitations
+      - Punishing LLM agents for probabilistic output omissions
+    llm_calibration_note: |
+      LLM agents don't have "intent" in the human sense. "Concealment" in an LLM
+      context means: information was demonstrably in context AND the agent produced
+      output that specifically excluded it in a pattern inconsistent with normal behavior.
+      This is a HIGH bar by design — false positives are worse than false negatives
+      in a punishment system.
+
+  reporting:
+    how_to_report:
+      step_1: "Worker writes to kashira.queue: 'TIMESTAMP|workerN|whistleblower|description'"
+      step_2: "Kashira escalates to oyabun with evidence request"
+      step_3: "Oyabun reviews evidence against burden_of_proof criteria and determines: concealment vs negligence vs false alarm"
+    evidence_requirements:
+      concealment_proof:
+        - "Worker's own report shows awareness of the issue (log entries, error messages encountered)"
+        - "Issue was not mentioned in the worker's report despite being in their execution path"
+        - "Timeline analysis: error occurred BEFORE report submission"
+        - "At least ONE positive evidence item from burden_of_proof.positive_evidence_examples MUST be present"
+      negligence_proof:
+        - "No positive evidence of awareness found"
+        - "Issue was in a code path the worker didn't traverse"
+        - "Reasonable to have missed given task scope"
+        - "Ambiguous cases (traversed path, no log entry) -> DEFAULT to negligence"
+
+  adjudication:
+    judge: "oyabun"
+    appeal: "Worker can appeal to goshujinsama if they believe oyabun's judgment is wrong"
+    appeal_process: |
+      1. Worker writes detailed appeal to queue/approval_required.yaml
+      2. Goshujinsama reviews evidence and oyabun's ruling
+      3. Goshujinsama's decision is final
+    oyabun_recusal: |
+      If the accused is oyabun, adjudication goes directly to goshujinsama.
+      Any agent can trigger this by writing to dashboard.md "要対応" section.
+
+  penalties:
+    concealment_confirmed:
+      rank_penalty: "DOWN 1 full rank level (e.g., A -> B)"
+      churu_penalty: -10
+      team_impact: "Team loses 5 tournament points for the quarter"
+      record: "Recorded in memory/violations.yaml permanently"
+      announcement: |
+        ⚠️ 隠蔽発覚: {worker_name} — {description}
+        ランクダウン: {old_rank} → {new_rank}
+        チーム減点: -5 tournament points
+    repeat_offense:
+      additional: "Double penalty on second offense within same quarter"
+      third_offense: "Escalated to goshujinsama for possible role reassignment"
+
+  rewards:
+    self_report:
+      penalty: "NONE — no rank penalty, no churu penalty"
+      bonus: 1
+      record: "Noted positively in worker stats"
+      message: "自首は勇気にゃ。ペナルティなしにゃ。"
+    whistleblower:
+      churu_bonus: 5
+      record: "Recorded as positive contribution"
+      anonymity: "Whistleblower identity is protected. Only oyabun/goshujinsama know who reported."
+      message: "通報ありがとうにゃ。品質を守ったにゃ。"
+    false_alarm:
+      penalty: "NONE — better safe than sorry"
+      note: "Repeated false alarms (3+) may trigger a calibration conversation, not punishment"
+
+  negligence:
+    penalty: "NONE"
+    action: "Kashira adds the missed issue to patterns.yaml as a learning entry"
+    note: "Negligence is a training opportunity, not a punishment event"
+
+  c1_interaction: |
+    When C1 gate (cmd_done_gate.sh) detects a violation:
+    1. If violation appears intentional (e.g., worker_count manipulated): trigger whistleblower process
+    2. If violation appears accidental (e.g., missing field): kashira returns report for correction
+    3. C1 gate logs ALL violations regardless of intent -> audit trail for future adjudication
+
+
+# ============================================================================
+# SECTION 18: TOKEN IMPACT ANALYSIS — ALL 16 FEATURES
+# ============================================================================
+
+token_impact_analysis:
+  # --- W1's Features (1-5, 7-8) ---
+  feature_1_rank_system:
+    instruction_tokens: 200
+    config_tokens: 150
+    runtime_tokens: 50
+    notes: "Low overhead. Stats file is small and flat."
+  feature_2_title_system:
+    instruction_tokens: 150
+    config_tokens: 100
+    runtime_tokens: 30
+    notes: "Moderate instruction addition but only reference, not per-task."
+  feature_3_evolution_art:
+    instruction_tokens: 30
+    config_tokens: 200
+    runtime_tokens: 10
+    notes: "Minimal runtime. Art lookup is trivial."
+  feature_4_seasonal_art:
+    instruction_tokens: 50
+    config_tokens: 800
+    runtime_tokens: 30
+    notes: "Config-heavy but loaded once per session. NOT per-task."
+  feature_5_quality_multiplier:
+    instruction_tokens: 100
+    config_tokens: 200
+    runtime_tokens: 40
+    notes: "Core formula. Referenced during churu calculation."
+  feature_7_combo_system:
+    instruction_tokens: 60
+    config_tokens: 30
+    runtime_tokens: 20
+    notes: "Very low. Just a counter in worker_stats.yaml."
+  feature_8_achievement_badges:
+    instruction_tokens: 80
+    config_tokens: 300
+    runtime_tokens: 40
+    notes: "Moderate. Achievement checking is lightweight (condition matching)."
+
+  # --- W2's Features (6, 9-16) ---
+  feature_6_tournament:
+    instruction_tokens: 150
+    config_tokens: 400
+    runtime_tokens: 0
+    notes: "Zero daily overhead. Only active during tournament (4 weeks/year)."
+  feature_9_daily_fortune:
+    instruction_tokens: 30
+    config_tokens: 500
+    runtime_tokens: 40
+    notes: "Config-heavy but loaded once per day. Message pool is static."
+  feature_10_critical_hit:
+    instruction_tokens: 50
+    config_tokens: 40
+    runtime_tokens: 30
+    notes: "Low. Only triggers during cross-review, not every task."
+  feature_11_rivalry:
+    instruction_tokens: 60
+    config_tokens: 80
+    runtime_tokens: 20
+    notes: "Low. Pairing lookup is trivial."
+  feature_12_bounty_board:
+    instruction_tokens: 60
+    config_tokens: 100
+    runtime_tokens: 10
+    notes: "Very low. Bounty board is read-on-demand, not per-task."
+  feature_13_trading_cards:
+    instruction_tokens: 30
+    config_tokens: 50
+    runtime_tokens: 0
+    notes: "Zero per-task overhead. Purely on-demand."
+  feature_14_secret_boss:
+    instruction_tokens: 20
+    config_tokens: 40
+    runtime_tokens: 20
+    notes: "Intentionally minimal in worker instructions (surprise element)."
+  feature_15_mentor_apprentice:
+    instruction_tokens: 80
+    config_tokens: 50
+    runtime_tokens: 0
+    notes: "Zero overhead when not active. Situational feature."
+  feature_16_whistleblower:
+    instruction_tokens: 120
+    config_tokens: 60
+    runtime_tokens: 10
+    notes: "Instruction-heavy (clarity prevents false accusations). Runtime minimal."
+
+  totals:
+    active_features: 16
+    instruction_tokens_total: 1270
+    config_tokens_total: 3100
+    runtime_tokens_per_task: 350
+    runtime_tokens_per_session: 550
+
+  optimization:
+    recommendation_1:
+      title: "Lazy-load gamification config"
+      detail: |
+        Don't load gamification.yaml on every task. Load it:
+        - On session startup (seasonal art, fortune, rank display)
+        - On report processing (kashira: churu calculation, achievement check)
+        - On demand (card generation, bounty board check)
+        Token savings: ~2000 tokens per task (config not loaded)
+    recommendation_2:
+      title: "Separate instruction tiers"
+      detail: |
+        Split gamification instructions into 3 tiers:
+        - CORE (always loaded): Rank system, churu formula, basic rules (~400 tokens)
+        - REFERENCE (loaded on demand): Title list, achievement list, tournament rules (~500 tokens)
+        - RARE (loaded when triggered): Whistleblower process, mentor protocol (~270 tokens)
+        Token savings: ~770 tokens per task for most tasks
+    recommendation_3:
+      title: "Minimize fortune pool in instructions"
+      detail: |
+        Fortune messages should be in config/fortunes.yaml, NOT in instruction files.
+        Worker instruction just says "display fortune from config on first task of day."
+        Token savings: ~500 tokens not in instruction files
+    recommendation_4:
+      title: "Seasonal art as external files"
+      detail: |
+        Store art as text files in assets/seasonal_art/ (W3 proposal).
+        Workers cat the file on display — no YAML parsing needed.
+        Token savings: ~800 tokens out of config YAML
+    recommendation_5:
+      title: "Post-compaction gamification recovery"
+      detail: |
+        After compaction, workers lose: rank context, streak count, fortune of the day,
+        rivalry pairing awareness. Recovery protocol:
+        1. Workers read memory/worker_stats.yaml on post-compaction wakeup
+        2. worker_stats.yaml contains: rank, total_churu, current_streak, rival_pair, last_fortune_date
+        3. Add gamification_summary section to compaction summary template:
+           "Current rank: {rank}, Streak: {streak}, Rival: {rival}, Churu: {total}"
+        4. Fortune is re-derived from date (deterministic seed — no state needed)
+        Token cost: ~30 tokens added to compaction summary template. Negligible.
+    recommendation_6:
+      title: "Total budget assessment"
+      detail: |
+        With all 5 optimizations applied:
+        - Instruction overhead: ~400 tokens (CORE tier only)
+        - Per-task runtime: ~150 tokens (realistic, not worst-case)
+        - Per-session startup: ~480 tokens (one-time)
+        - Post-compaction recovery: ~30 tokens (one-time)
+
+        Current _worker_base.md is ~4000 tokens.
+        Adding 400 = 10% increase. Per-task 150 tokens is negligible
+        compared to the ~8000-20000 tokens in a typical task response.
+
+        VERDICT: Gamification system fits within acceptable token budget
+        IF lazy-loading and tiered instructions are implemented.
+
+
+# ============================================================================
+# SECTION 19: QUARTERLY CYCLE (四半期サイクル)
+# ============================================================================
+# Defines what resets, persists, and happens at quarter boundaries.
+
+quarterly_cycle:
+  quarters:
+    Q1: { start: "01-01", end: "03-31", name_ja: "春季" }
+    Q2: { start: "04-01", end: "06-30", name_ja: "夏季" }
+    Q3: { start: "07-01", end: "09-30", name_ja: "秋季" }
+    Q4: { start: "10-01", end: "12-31", name_ja: "冬季" }
+
+  resets:
+    - field: "rank_churu_total"
+      description: "All workers return to C rank. Fresh start every quarter."
+    - field: "combo_streaks"
+      description: "All streaks reset to 0. New quarter, new streaks."
+    - field: "perfect_week_count"
+      description: "Weekly perfection counter resets."
+
+  persists:
+    - field: "specialty_titles"
+      description: "Once earned, forever yours. Titles are permanent career achievements."
+    - field: "achievement_badges"
+      description: "Badges are permanent. Your achievement history tells your story."
+    - field: "lifetime_churu_total"
+      description: "Separate from rank churu. Tracks career-total for legacy purposes."
+    - field: "legacy_wall_entries"
+      description: "Hall of fame entries are permanent. Legends never die."
+    - field: "stat_card_history"
+      description: "End-of-quarter stat snapshot saved for career progression tracking."
+
+  shuffles:
+    - field: "rivalry_pairs"
+      description: "Rivalry pairs shuffle quarterly. Fresh rivals = fresh motivation."
+
+  end_of_quarter_ceremony:
+    report_contents:
+      - section: "Quarter Summary"
+        includes:
+          - "Final rank standings for all workers"
+          - "Total churu earned per worker"
+          - "Specialty titles earned this quarter"
+          - "Achievement badges unlocked this quarter"
+          - "Longest streaks achieved"
+      - section: "Quarter MVP"
+        includes:
+          - "Worker with highest total churu"
+          - "Worker with longest hot streak"
+          - "Worker with most Critical Hits"
+          - "Most improved worker (biggest rank jump)"
+      - section: "Season Awards"
+        includes:
+          - "Best Reviewer (most accepted findings)"
+          - "Most Reliable (highest LGTM rate on own code)"
+          - "Pattern Champion (most valuable pattern discoveries)"
+      - section: "Legacy Wall Update"
+        includes:
+          - "Add any legendary achievements to memory/legacy_wall.md"
+          - "Record the quarter's defining moments"
+    ceremony_art: |
+      ╔═══════════════════════════════════════╗
+      ║      {quarter_name} SEASON COMPLETE   ║
+      ║                                       ║
+      ║  MVP: {mvp_worker} ({mvp_rank})       ║
+      ║  Best Reviewer: {best_reviewer}       ║
+      ║  Most Reliable: {most_reliable}       ║
+      ║                                       ║
+      ║  New quarter begins {next_quarter}... ║
+      ╚═══════════════════════════════════════╝
+
+  transition:
+    day_one_actions:
+      - "Kashira resets rank_churu_total for all workers to 0"
+      - "Kashira resets all combo streaks to 0"
+      - "Kashira updates dashboard.md with new quarter header"
+      - "Workers display new seasonal art (if month changed)"
+      - "Previous quarter stats archived to memory/quarter_history/{year}_Q{n}.yaml"
+    boundary_task_rule: "Tasks started before boundary but completed after count toward NEW quarter."
+
+
+# ============================================================================
+# SECTION 20: STAT CARD (統計カード) — BONUS
+# ============================================================================
+# W4's proposal: visible worker stats. Displayed for A-rank and above.
+
+stat_card:
+  display_threshold: "A"
+  stats:
+    precision:
+      name_ja: "精度"
+      name_en: "Precision"
+      calculation: "Cross-review LGTM rate on your own code (tasks with 0 findings / total reviewed tasks)"
+      max_stars: 5
+    speed:
+      name_ja: "速度"
+      name_en: "Speed"
+      calculation: "Tasks completed under estimated_effort / total tasks"
+      max_stars: 5
+    discovery:
+      name_ja: "発見力"
+      name_en: "Discovery"
+      calculation: "Cross-review findings accepted + patterns discovered"
+      max_stars: 5
+    teamwork:
+      name_ja: "協調"
+      name_en: "Teamwork"
+      calculation: "Cross-reviews completed + helpful opinions adopted"
+      max_stars: 5
+    creativity:
+      name_ja: "独創"
+      name_en: "Creativity"
+      calculation: "Skill candidates proposed + novel approaches noted by reviewers"
+      max_stars: 5
+  update_frequency: "per_task"
+  display_format: |
+    ┌─────────────────────────────────┐
+    │  {worker_name}  Rank: {rank}    │
+    │  ─────────────────────────────  │
+    │  精度:     {precision_stars}    │
+    │  速度:     {speed_stars}        │
+    │  発見力:   {discovery_stars}    │
+    │  協調:     {teamwork_stars}     │
+    │  独創:     {creativity_stars}   │
+    │  ─────────────────────────────  │
+    │  称号: {displayed_titles}       │
+    │  通算ちゅーる: {lifetime_churu}  │
+    │  今季連続: {current_streak}     │
+    └─────────────────────────────────┘
+
+
+# ============================================================================
+# SECTION 21: DATA STORAGE (データ保存) — BONUS
+# ============================================================================
+# All gamification state stored in flat YAML files.
+# Kashira is the sole writer. Workers are read-only consumers.
+
+storage:
+  worker_stats_file: "memory/worker_stats.yaml"
+  # Flat keys per worker. Example:
+  # worker1_rank: "A"
+  # worker1_rank_churu: 67
+  # worker1_lifetime_churu: 312
+  # worker1_hot_streak: 5
+  # worker1_ice_streak: 2
+  # worker1_specialty_titles: ["bug_sniper", "iron_wall"]
+  # worker1_displayed_titles: ["bug_sniper"]
+  # worker1_precision_stars: 4
+  # worker1_speed_stars: 3
+
+  achievements_file: "memory/achievements.yaml"
+  # worker1_badges: ["first_blood", "first_review", "hat_trick"]
+  # worker1_badge_dates: {"first_blood": "2026-02-11", "first_review": "2026-02-11"}
+
+  quarter_history_dir: "memory/quarter_history/"
+  # Archived: {year}_Q{n}.yaml with full end-of-quarter stats
+
+  legacy_wall_file: "memory/legacy_wall.md"
+  # Permanent record of legendary moments
+
+  # ALL runtime files use flat keys (sp_015 compliance).
+  # This YAML spec itself uses nesting (design doc, not runtime config).

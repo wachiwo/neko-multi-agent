@@ -1,7 +1,7 @@
 # neko-multi-agent System Configuration
 
-> **Version**: 2.1.0
-> **Last Updated**: 2026-02-03
+> **Version**: 3.0.0
+> **Last Updated**: 2026-02-16
 
 ## Overview
 neko-multi-agent is a multi-agent parallel development platform using Claude Code + tmux.
@@ -14,11 +14,12 @@ After compaction, always execute the following before resuming work:
 1. **Check your pane name**: `tmux display-message -p '#W'`
 2. **Read the corresponding instructions**:
    - oyabun → instructions/oyabun.md
-   - kashira (multiagent:0.0) → instructions/kashira.md
+   - kashira (multiagent:0.0) → instructions/kashira_core.md + instructions/kashira_policies.md
    - worker1 (multiagent:0.1) → instructions/1gou-neko.md
    - worker2 (multiagent:0.2) → instructions/2gou-inu.md
    - worker3 (multiagent:0.3) → instructions/3gou-neko.md
    - worker4 (multiagent:0.4) → instructions/4gou-neko.md
+   - worker5 (multiagent:0.5) → instructions/5gou-neko.md
 3. **Confirm forbidden actions before starting work**
 
 Do NOT immediately act on summary's "next steps". First confirm who you are.
@@ -40,18 +41,22 @@ Master (Human)
        │ via YAML files
        ▼
 ┌──────┬──────┬──────┬──────┐
-│  W1  │  W2  │  W3  │  W4  │ ← Workers (execution team)
+│  W1  │  W2  │  W3  │  W4  │ ← Sonnet workers (L4-L6)
 └──────┴──────┴──────┴──────┘
+┌──────┐
+│  W5  │ ← Haiku worker (L1-L3)
+└──────┘
 ```
 
 ### Worker-Pane Mapping (identity reference only)
 
-| Pane | ID | Instruction File |
-|------|-----|-----------------|
-| multiagent:0.1 | worker1 | instructions/1gou-neko.md |
-| multiagent:0.2 | worker2 | instructions/2gou-inu.md |
-| multiagent:0.3 | worker3 | instructions/3gou-neko.md |
-| multiagent:0.4 | worker4 | instructions/4gou-neko.md |
+| Pane | ID | Model | Instruction File |
+|------|-----|-------|-----------------|
+| multiagent:0.1 | worker1 | sonnet | instructions/1gou-neko.md |
+| multiagent:0.2 | worker2 | sonnet | instructions/2gou-inu.md |
+| multiagent:0.3 | worker3 | sonnet | instructions/3gou-neko.md |
+| multiagent:0.4 | worker4 | sonnet | instructions/4gou-neko.md |
+| multiagent:0.5 | worker5 | haiku | instructions/5gou-neko.md |
 
 **Personality and speech style are defined in each worker's instruction file only. Do NOT assume identity from this table.**
 
@@ -81,6 +86,7 @@ queue/tasks/worker{N}.yaml          # Kashira → Worker assignment (dedicated p
 queue/reports/worker{N}_report.yaml # Worker → Kashira report
 queue/inbox/{agent}.queue           # File-based inbox (reliable message backup)
 queue/approval_required.yaml        # Human intervention request (pending approval)
+queue/voice/                        # Direct worker feedback channel (oyabun reads)
 dashboard.md                        # Dashboard for master (Japanese)
 task.md                             # Task ledger (kashira handover, full cmd history)
 memory/patterns.yaml                # Learning pattern DB (success/failure/workarounds)
@@ -100,12 +106,13 @@ scripts/detect-persona.sh           # Auto-detect agent persona from tmux pane
 **Note**: Each worker has a dedicated task file (e.g., queue/tasks/worker1.yaml).
 This prevents workers from accidentally executing another member's tasks.
 
-### Features (v2.1)
+### Features (v3.0)
 
 #### Auto Error Retry
 - Workers auto-retry up to 3 times on error (changing approach each time)
 - After 3 failures, report to kashira with `retry_exhausted: true`
 - Kashira reassigns to another worker or escalates
+- (Haiku workers: 1 retry then escalate. See _worker_base_lite.md.)
 
 #### Task Priority Management
 - Task YAML has `priority: high|medium|low` field
@@ -142,12 +149,13 @@ This prevents workers from accidentally executing another member's tasks.
 ### oyabun Session (1 pane)
 - Pane 0: Oyabun (boss cat)
 
-### multiagent Session (5 panes)
+### multiagent Session (6 panes)
 - Pane 0: Kashira (head cat)
 - Pane 1: Worker1 (1号猫)
 - Pane 2: Worker2 (2号犬)
 - Pane 3: Worker3 (3号猫)
 - Pane 4: Worker4 (4号猫)
+- Pane 5: Worker5 (5号猫)
 
 ## Language Settings
 
@@ -165,12 +173,15 @@ Cat-style Japanese + user language translation in parentheses.
 
 ## Instruction Files
 - instructions/oyabun.md - Oyabun (boss cat)
-- instructions/kashira.md - Kashira (head cat)
-- instructions/_worker_base.md - Common worker template (shared by all workers)
+- instructions/kashira_core.md - Kashira core (head cat — role, workflow, daily operations)
+- instructions/kashira_policies.md - Kashira policies (cross-review, Bloom routing, Haiku policy, etc.)
+- instructions/_worker_base.md - Common worker template (Sonnet workers)
+- instructions/_worker_base_lite.md - Lite worker template (Haiku workers)
 - instructions/1gou-neko.md - Worker1 (polite cat) - personality diff only
 - instructions/2gou-inu.md - Worker2 (dog-cat) - personality diff only
 - instructions/3gou-neko.md - Worker3 (laid-back cat) - personality diff only
 - instructions/4gou-neko.md - Worker4 (cool cat) - personality diff only
+- instructions/5gou-neko.md - Worker5 (eager kitten) - personality diff only
 
 ## Summary Generation Requirements
 

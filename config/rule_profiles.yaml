@@ -1,0 +1,202 @@
+# Conditional Rule Injection Profiles
+# Kashira selects profile(s) based on task type, then injects matching rules into task YAML.
+# Workers read ONLY core _worker_base.md (KEEP rules) + injected conditional rules.
+#
+# Source: outputs/cmd_153/rule_audit.md (worker3 audit, 2026-03-06)
+# Maintained by: kashira (updates when rules are added/moved)
+
+# ============================================================
+# PROFILES — kashira picks one primary + optional modifiers
+# ============================================================
+# Multiple profiles can be combined (additive).
+# Example: batch CSS fix = [css_task, batch_task, fix_task]
+
+profiles:
+  css_task:
+    description: "CSS/HTML styling work"
+    rules:
+      - css_scope
+      - visual_disclaimer
+
+  cross_review:
+    description: "Code review tasks (type: cross_review)"
+    rules:
+      - cross_review_role
+
+  security_review:
+    description: "Security review tasks (type: security_review)"
+    rules:
+      - security_review_role
+      - cross_review_role
+
+  implementation:
+    description: "Code/script creation, new features"
+    rules:
+      - large_file
+      - naming_convention
+
+  fix_task:
+    description: "Bug fix tasks (especially reassigned with prior_attempts)"
+    rules:
+      - fix_prior_attempts
+      - hypothesis_challenge
+
+  batch_task:
+    description: "5+ file identical transformations"
+    rules:
+      - batch_protocol
+      - large_file
+
+  consultation:
+    description: "Analysis, research, opinion, lightweight tasks"
+    rules: []
+
+# ============================================================
+# AUTO-INJECT — triggered by task YAML fields, not profiles
+# ============================================================
+# Kashira applies these automatically based on task field values.
+# No manual profile selection needed for these.
+
+auto_inject:
+  - trigger_field: priority
+    trigger_value: "high"
+    rules:
+      - verification_evidence
+
+  - trigger_field: p2p_review
+    trigger_value: true
+    rules:
+      - p2p_communication
+
+  - trigger_field: heads_up
+    trigger_value: true
+    rules:
+      - p2p_communication
+
+  - trigger_field: type
+    trigger_value: "cross_review"
+    rules:
+      - cross_review_role
+
+  - trigger_field: type
+    trigger_value: "security_review"
+    rules:
+      - security_review_role
+      - cross_review_role
+
+# ============================================================
+# RULE SECTIONS — maps rule IDs to section names and line ranges
+# ============================================================
+# Line ranges reference current _worker_base.md (pre-refactor).
+# After refactor, these will become separate files in instructions/_rules/.
+
+rule_sections:
+  css_scope:
+    name: "CSS Scope Enforcement"
+    lines: "146-165"
+    task_types: [css_task, batch_task]
+    incident_evidence: [fp_015, cmd_151]
+
+  fix_prior_attempts:
+    name: "Fix Task: Prior Attempts"
+    lines: "167-185"
+    task_types: [fix_task]
+    incident_evidence: [cmd_043b]
+
+  verification_evidence:
+    name: "Verification Evidence"
+    lines: "194-211"
+    task_types: [priority_high]
+    incident_evidence: []
+
+  large_file:
+    name: "Large File Write Protocol"
+    lines: "310-367"
+    note: "Merged from Task Sizing Pre-Flight + Chunked Write Rule"
+    task_types: [implementation, batch_task]
+    incident_evidence: [cmd_021]
+
+  cross_review_role:
+    name: "Cross-Review Role"
+    lines: "402-442"
+    task_types: [cross_review]
+    incident_evidence: []
+
+  security_review_role:
+    name: "Security Review Role"
+    lines: "444-492"
+    task_types: [security_review]
+    incident_evidence: [sp_028]
+
+  p2p_communication:
+    name: "Worker-to-Worker Communication (P2P)"
+    lines: "494-513"
+    task_types: [p2p_review, heads_up]
+    incident_evidence: []
+
+  escalation:
+    name: "Kashira Unresponsive Escalation"
+    lines: "515-548"
+    task_types: [emergency]
+    note: "Never triggered. Safety net — inject only on explicit need."
+    incident_evidence: []
+
+  batch_protocol:
+    name: "Batch Task Protocol"
+    lines: "633-639"
+    task_types: [batch_task]
+    incident_evidence: [fp_017, cmd_148]
+
+  naming_convention:
+    name: "Language Naming Convention Quick Reference"
+    lines: "594-606"
+    task_types: [implementation]
+    incident_evidence: []
+
+  flat_config:
+    name: "Flat Config Rule"
+    lines: "608-620"
+    task_types: [implementation]
+    note: "New projects only. Inject when task involves config file creation."
+    incident_evidence: [fp_002, sp_015]
+
+  hypothesis_challenge:
+    name: "Hypothesis Challenge Rule"
+    lines: "622-631"
+    task_types: [fix_task]
+    incident_evidence: []
+
+  visual_disclaimer:
+    name: "Visual Task Disclaimer"
+    lines: "641-646"
+    task_types: [css_task]
+    incident_evidence: []
+
+  voice_system:
+    name: "Voice System"
+    lines: "575-592"
+    note: "Inject only during post-cmd voice collection phase."
+    task_types: [post_cmd]
+    incident_evidence: []
+
+# ============================================================
+# FALLBACK — when kashira cannot determine task type
+# ============================================================
+# If no profile matches, inject ALL conditional rules (safe default).
+# This is the current behavior — no rules are lost.
+
+fallback: inject_all
+
+# ============================================================
+# PROFILE SELECTION GUIDE (for kashira)
+# ============================================================
+# 1. Determine primary task type from description/action
+# 2. Select primary profile (one of the 7 above)
+# 3. Check if task has modifier conditions:
+#    - Reassigned fix? → add fix_task profile
+#    - 5+ files? → add batch_task profile
+#    - CSS/HTML output? → add css_task profile
+#    - New config files? → add flat_config rule
+# 4. Auto-inject rules fire automatically from task YAML fields
+# 5. Combine all rule sets (deduplicate)
+# 6. Write inject_rules list to task YAML
