@@ -16,7 +16,7 @@ unverified_risks: ["..."]      # REQUIRED even if none
 skill_candidate: none           # full block only when found: true
 ```
 
-## Error Handling (Haiku: 1 retry then escalate)
+## Error Handling
 1. Try ONE alternative approach
 2. If still fails → report `status: failed` + notify kashira inbox
 

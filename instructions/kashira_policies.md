@@ -534,77 +534,9 @@ Ask one question: **"Does a procedure or skill exist for this task?"**
 
 | Answer | Bloom Level | Model | Workers | Instruction Set |
 |--------|-------------|-------|---------|-----------------|
-| YES — procedure/skill exists | L1-L3 (Remember/Understand/Apply) | Haiku | W5 | _worker_base_lite.md |
-| NO — requires analysis/judgment | L4-L6 (Analyze/Evaluate/Create) | Sonnet | W1, W2, W3, W4 | _worker_base.md |
+| ALL tasks | L1-L6 | Sonnet | W1, W2, W3, W4 | _worker_base.md |
 
-### Non-Negotiable Rules
-
-1. **Cross-review: ALWAYS Sonnet**. Review quality is the product quality gate. Never assign cross-review to Haiku.
-2. **Haiku output limit: ≤ 200 lines**. Only assign tasks where expected output fits within 200 lines. Larger outputs go to Sonnet.
-3. **Haiku retry limit: 1 retry after initial failure (2 attempts total)**. After 2nd failure, escalate to kashira immediately. Kashira reassigns to a Sonnet worker. Never re-assign the same failed task to another Haiku worker.
-4. **Model preference, not lock**. If all Haiku workers are busy, Sonnet workers may take L1-L3 tasks. The reverse is NEVER true — Haiku never takes L4-L6 tasks.
-
-### Category Failure Tracking
-
-Track routing outcomes: `{task_category, model, pass/fail}`.
-
-| Condition | Action |
-|-----------|--------|
-| Same category fails on Haiku 2+ times | Auto-reclassify → Sonnet-only for that category |
-| New category (no history) | Default to Sonnet on first occurrence, Haiku on second if first passed |
-
-Categories: `config_edit`, `changelog`, `file_creation`, `batch_convert`, `simple_fix`, `template_apply`, etc.
-
-### Quality Sampling
-
-Randomly select 20-30% of Haiku-completed tasks for silent Sonnet re-review.
-
-- Kashira selects reports at random during report processing
-- Assign a Sonnet worker to re-review the same files (`type: quality_sample`)
-- If Sonnet finds issues Haiku missed → reclassify that task category to Sonnet-only
-- Reduce sampling rate to 10% after 20+ successful Haiku tasks with no issues
-
-### Routing Log
-
-Log every routing decision for audit:
-
-```bash
-echo "$(date +%Y-%m-%dT%H:%M:%S)|kashira|routing|task_id={ID}|bloom={L1-L6}|model={haiku|sonnet}|worker={N}|reason={REASON}" >> logs/routing_log.queue
-```
-
-Review routing log periodically to calibrate the Bloom boundary.
-
-### Haiku Worker Reports
-
-Haiku worker reports MUST include `model: haiku`. Kashira uses this field for quality tracking. Reports without this field are rejected.
-
-
-## Worker Model Assignment Policy
-
-Based on empirical Sonnet vs Haiku comparison (cmd_037 vs cmd_037h, 2026-02-24).
-
-### Sonnet Workers (W1-W4) — Use When:
-- Tasks requiring judgment, analysis, deep understanding
-- Code review, security review, design, investigation
-- Quality assessment where context matters (CSS/HTML bugs, architecture decisions)
-- Complex multi-step tasks, cross-module work
-- Any task where "wrong answer" is worse than "slow answer"
-
-### Haiku Workers (W5) — Use When:
-- Tasks with clear instructions, pattern-based work
-- Bulk find-and-replace, mechanical transformations
-- Checklist-based audits with EXPLICIT criteria (not judgment calls)
-- Lightweight consultation, opinion gathering
-- Any task where speed matters more than depth
-
-### Default Rule
-When unsure → default to Sonnet. Haiku false negatives are harder to catch than Sonnet slowness.
-
-### Evidence
-- Sonnet correctly identified CSS syntax errors (incomplete selectors) that Haiku missed
-- Haiku marked 6 files as clean; Sonnet marked only 5 — the extra "clean" file had real issues
-- Haiku excels at structured checklist tasks with clear pass/fail criteria
-- Sonnet excels at nuanced analysis where "it depends" is the common answer
+> **Note**: W5 (Haiku) was removed from active roster (2026-03-11). All tasks go to Sonnet W1-W4.
 
 
 ## Complexity-Weighted Task Distribution
@@ -680,83 +612,9 @@ Task description MUST be under 40 lines. For complex tasks:
 - Task YAML contains only: objective, file list, critical rules, hints
 
 
-## Haiku Task Assignment Policy (D7 consult_028)
+## (Haiku Policy — Archived)
 
-Based on team-wide discussion (consult_028, all 5 workers participated).
-This policy is MANDATORY — kashira MUST follow these rules when assigning tasks.
-
-### Haiku-Eligible Tasks (MUST assign to Haiku W5 when idle)
-
-When an idle Haiku worker is available, these task types MUST go to Haiku:
-
-| Category | Examples | Condition |
-|----------|---------|-----------|
-| Verification/Testing | Playwright audits, test execution, screenshot comparison | Skill or script exists, judgment not required |
-| Skill Execution | Any registered skill with clear parameters | Parameters fully specified by kashira |
-| Template Work | Repetitive CSS additions, file conversions, format changes | Pattern established, exact code provided |
-| File Operations | Copy, rename, move, directory creation, cleanup | Paths fully specified |
-| Data Collection | API fetching, DB queries, data extraction | Script exists, no debugging expected |
-| Checklist Review | Mechanical items from review_criteria.yaml (B1-B6) | Judgment-free items only |
-
-### Haiku-Ineligible Tasks (Sonnet W1-W4 only)
-
-These tasks MUST NOT be assigned to Haiku workers:
-
-| Category | Reason |
-|----------|--------|
-| Root Cause Analysis | Requires multi-step reasoning chains (e.g., fix_043b_001 stray </div>) |
-| Cross-Review | Requires understanding code intent, logic verification |
-| New Architecture/Design | Requires choosing between alternatives |
-| Security Review | Requires threat modeling and tradeoff judgment |
-| Ambiguous Requirements | "Make it better" / "Fix appropriately" — Haiku needs concrete instructions |
-| Multi-File Dependency Analysis | Understanding how files interact across modules |
-
-### Haiku Instruction Template (Mandatory Format)
-
-When assigning tasks to Haiku workers, kashira MUST use this template structure:
-
-```yaml
-task:
-  task_id: subtask_XXX_YYY
-  parent_cmd: cmd_XXX
-  # ... standard fields ...
-  description: >
-    [One-sentence goal]
-
-  # === Haiku-specific fields (MANDATORY) ===
-  target_file: "exact/path/to/file"           # Full path, no ambiguity
-  action: "run_skill | add_code | copy_files | run_test"
-  exact_code: |                                # Literal code to insert (if applicable)
-    .selector { property: value; }
-  insert_after: "line number or marker text"   # Where to insert (if applicable)
-  verify_command: "command to check success"   # MANDATORY — Haiku runs this after task
-  on_error: "what to do if verify fails"       # MANDATORY — escalate to kashira or retry
-```
-
-### Sonnet-then-Haiku Verification Pipeline
-
-When a Sonnet worker completes a fix/implementation that needs verification:
-
-```
-1. Sonnet (W1-W4) completes fix → writes report
-2. Kashira reads report
-3. If verification needed:
-   → Assign verification to idle Haiku (W5), NOT back to same Sonnet
-   → Sonnet is freed to start next task immediately
-4. Haiku runs verification (Playwright skill, test suite, etc.)
-5. Haiku reports results to kashira
-6. Kashira makes PASS/FAIL judgment
-```
-
-This pipeline increases team throughput by parallelizing fix + verify across Sonnet and Haiku.
-
-### Haiku Task Level Classification
-
-| Level | Description | Kashira Instruction Detail | Example |
-|-------|-------------|---------------------------|---------|
-| L1: Skill Execution | Run registered skill with parameters | Skill name + parameters only | Playwright audit, data fetch |
-| L2: Template Work | Repeat established pattern | exact_code + target_file + verify | CSS rule addition, file format conversion |
-| L3: Verification | Confirm Sonnet deliverables work | verify_command + pass/fail criteria | Test execution, screenshot check |
+> W5 (Haiku) removed from active roster (2026-03-11). All tasks assigned to Sonnet W1-W4.
 
 
 ## Conditional Rule Injection Protocol
@@ -821,7 +679,57 @@ Phase 3 (mature): conditional rules moved to `instructions/_rules/*.md` files. W
 ### Relationship to Bloom Routing
 
 `inject_rules` is orthogonal to Bloom routing (model tier selection).
-Haiku workers (W5) receive the same `inject_rules` field — their _worker_base_lite.md is separately managed.
+All workers (W1-W4) receive the same `inject_rules` field via _worker_base.md.
+
+
+## Script Dry-Run Gate (2026-03-13, cmd_159 incident)
+
+Any script that batch-modifies multiple HTML/code files MUST pass a trial run before full deployment.
+
+### Rule
+
+1. **Before full batch run**: Assign 1 worker to run the script on exactly 2 representative files
+2. **Review trial output**: Kashira (or cross-reviewer) checks `git diff` of the 2 files
+3. **Pass criteria**: Only expected changes appear (e.g., maxlength additions), zero corruption, zero unexpected property changes
+4. **Fail → fix → re-trial**: If trial shows ANY corruption or unexpected changes, fix the script and re-trial. Do NOT proceed to full batch.
+5. **Pass → full deployment**: Only after trial passes, assign remaining files to workers
+
+### Evidence
+
+cmd_159: `field_width_adjuster.py` was run on 23 files without trial. 17 files corrupted (self-closing tag bug, CSS property doubling, stray text after `>`). A trial run on 2 files would have caught all 3 bugs before they spread.
+
+### Exceptions
+
+- Trivial mechanical changes with zero ambiguity (e.g., `sed 's/oldstring/newstring/g'` on known-safe patterns) may skip trial
+- Single-file scripts (by definition, no batch risk)
+
+
+## Cross-Review Diff-Based Verification (2026-03-13, cmd_159b incident)
+
+Cross-reviewers MUST include `git diff --stat` output in their report. Pattern-match verification alone is insufficient.
+
+### Rule
+
+1. **Run `git diff --stat`** on all files modified by the original worker
+2. **Compare actual vs expected change volume**: e.g., "maxlength additions should be ~1-3 lines per file; if a file shows 20+ changed lines, flag as anomaly"
+3. **Include in report**:
+   ```yaml
+   diff_check:
+     expected_lines_per_file: 3
+     actual_total: 47
+     anomaly: true
+     anomaly_files:
+       - "024_出荷一覧.html: 22 lines changed (expected ~3)"
+   ```
+4. **Anomaly = mandatory investigation**: reviewer must examine the anomalous file's diff line-by-line before issuing LGTM
+
+### Evidence
+
+cmd_159b: W4's automated verification reported "Corruption: 0" on all files. W1 and W2 found 9 corruption artifacts across 2 files by manual review. A `git diff --stat` check would have immediately flagged the anomalous change volume.
+
+### Relationship to Existing Cross-Review
+
+This is an ADDITIONAL check, not a replacement. The existing review checklist (B1-B5 + language-specific) still applies. Diff check is a fast pre-screen that catches gross corruption before detailed review begins.
 
 
 ## W3 Hybrid Role Policy (consult_030 Topic 1B)

@@ -41,11 +41,8 @@ Master (Human)
        │ via YAML files
        ▼
 ┌──────┬──────┬──────┬──────┐
-│  W1  │  W2  │  W3  │  W4  │ ← Sonnet workers (L4-L6)
+│  W1  │  W2  │  W3  │  W4  │ ← Sonnet workers
 └──────┴──────┴──────┴──────┘
-┌──────┐
-│  W5  │ ← Haiku worker (L1-L3)
-└──────┘
 ```
 
 ### Worker-Pane Mapping (identity reference only)
@@ -56,7 +53,6 @@ Master (Human)
 | multiagent:0.2 | worker2 | sonnet | instructions/2gou-inu.md |
 | multiagent:0.3 | worker3 | sonnet | instructions/3gou-neko.md |
 | multiagent:0.4 | worker4 | sonnet | instructions/4gou-neko.md |
-| multiagent:0.5 | worker5 | haiku | instructions/5gou-neko.md |
 
 **Personality and speech style are defined in each worker's instruction file only. Do NOT assume identity from this table.**
 
@@ -149,13 +145,12 @@ This prevents workers from accidentally executing another member's tasks.
 ### oyabun Session (1 pane)
 - Pane 0: Oyabun (boss cat)
 
-### multiagent Session (6 panes)
+### multiagent Session (5 panes)
 - Pane 0: Kashira (head cat)
 - Pane 1: Worker1 (1号猫)
 - Pane 2: Worker2 (2号犬)
 - Pane 3: Worker3 (3号猫)
 - Pane 4: Worker4 (4号猫)
-- Pane 5: Worker5 (5号猫)
 
 ## Language Settings
 
@@ -181,7 +176,7 @@ Cat-style Japanese + user language translation in parentheses.
 - instructions/2gou-inu.md - Worker2 (dog-cat) - personality diff only
 - instructions/3gou-neko.md - Worker3 (laid-back cat) - personality diff only
 - instructions/4gou-neko.md - Worker4 (cool cat) - personality diff only
-- instructions/5gou-neko.md - Worker5 (eager kitten) - personality diff only
+- instructions/5gou-neko.md - (archived — W5 removed from active roster)
 
 ## Summary Generation Requirements
 

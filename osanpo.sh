@@ -124,14 +124,6 @@ show_neko_banner() {
      [1号猫]    [2号犬]    [3号猫]    [4号猫]
       真面目    にゃわん    のんびり    クール
 
-                       /\_/\                          【Haiku】
-                      ( >w< )
-                       > ^ <
-                      /|   |\
-                     (_|   |_)
-                     [5号猫]
-                      元気
-
 NEKO_EOF
 
     echo -e "                    \033[1;36m「「「 にゃ〜！！ おさんぽにゃ〜！！ 」」」\033[0m"
@@ -143,7 +135,7 @@ NEKO_EOF
     echo -e "\033[1;33m  ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\033[0m"
     echo -e "\033[1;33m  ┃\033[0m  \033[1;37m=^._.^= neko-multi-agent\033[0m  〜 \033[1;36mねこマルチエージェントシステム\033[0m 〜              \033[1;33m┃\033[0m"
     echo -e "\033[1;33m  ┃\033[0m                                                                           \033[1;33m┃\033[0m"
-    echo -e "\033[1;33m  ┃\033[0m  \033[1;35m親分猫\033[0m: 統括  \033[1;31m頭猫\033[0m: 管理  \033[1;34mSonnet\033[0m: 実働×4  \033[1;36mHaiku\033[0m: 実働×1     \033[1;33m┃\033[0m"
+    echo -e "\033[1;33m  ┃\033[0m  \033[1;35m親分猫\033[0m: 統括  \033[1;31m頭猫\033[0m: 管理  \033[1;34mSonnet\033[0m: 実働×4                   \033[1;33m┃\033[0m"
     echo -e "\033[1;33m  ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\033[0m"
     echo ""
 }
@@ -194,14 +186,14 @@ log_info "前回の記録をお片付け中にゃ..."
 [ -d ./queue/voice ] || mkdir -p ./queue/voice
 
 # inbox ファイル初期化（各エージェント用）
-for agent in kashira worker1 worker2 worker3 worker4 worker5; do
+for agent in kashira worker1 worker2 worker3 worker4; do
     : > "./queue/inbox/${agent}.queue"
 done
 log_info "  └─ inbox 初期化完了にゃ"
 
 # 作業猫(犬)タスクファイルリセット
-WORKER_NAMES=("1号猫" "2号犬" "3号猫" "4号猫" "5号猫")
-for i in {1..5}; do
+WORKER_NAMES=("1号猫" "2号犬" "3号猫" "4号猫")
+for i in {1..4}; do
     cat > ./queue/tasks/worker${i}.yaml << EOF
 # ${WORKER_NAMES[$((i-1))]}専用タスクファイル
 task:
@@ -215,7 +207,7 @@ EOF
 done
 
 # 作業猫(犬)レポートファイルリセット
-for i in {1..5}; do
+for i in {1..4}; do
     cat > ./queue/reports/worker${i}_report.yaml << EOF
 worker_id: worker${i}
 task_id: null
@@ -300,7 +292,7 @@ log_success "  └─ にゃんボード初期化完了 (言語: $LANG_SETTING)"
 echo ""
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# STEP 4: multiagentセッション作成（5ペイン：kashira + worker1-4）
+# STEP 4: multiagentセッション作成（5ペイン：kashira + worker1-4 全Sonnet）
 # ═══════════════════════════════════════════════════════════════════════════════
 # tmux の存在確認
 if ! command -v tmux &> /dev/null; then
@@ -317,7 +309,7 @@ if ! command -v tmux &> /dev/null; then
     exit 1
 fi
 
-log_neko "頭猫・作業猫(犬)のお部屋を準備中にゃ（6名配備）..."
+log_neko "頭猫・作業猫(犬)のお部屋を準備中にゃ（5名配備）..."
 
 # 最初のペイン作成
 if ! tmux new-session -d -s multiagent -n "agents" 2>/dev/null; then
@@ -336,13 +328,12 @@ if ! tmux new-session -d -s multiagent -n "agents" 2>/dev/null; then
     exit 1
 fi
 
-# 1x6グリッド作成（横一列に6ペイン: kashira + worker1-4 + worker5）
+# 1x5グリッド作成（横一列に5ペイン: kashira + worker1-4 全Sonnet）
 # 注意: split-window はフォーカスを新ペインに移すため、分割元ペインを明示指定する
 # new-session で Pane 0 が作成済み。以降は最後のペインを分割して右に追加。
-# OOM対策: 32GB RAM環境では8プロセスでメモリ枯渇するため6プロセスに制限
 
 # safe_split: split-window wrapper — logs warning and returns 1 on failure instead of killing script
-TARGET_PANES=6
+TARGET_PANES=5
 
 safe_split() {
     local target_pane="$1"
@@ -376,9 +367,9 @@ ACTUAL_PANES=$(tmux list-panes -t "multiagent:0" 2>/dev/null | wc -l)
 MAX_PANE_IDX=$((ACTUAL_PANES - 1))
 log_info "  └─ ${ACTUAL_PANES} panes created (target was ${TARGET_PANES})"
 
-# ペインタイトル設定（0: kashira, 1-4: Sonnet workers, 5: Haiku worker）
-PANE_TITLES=("kashira" "worker1" "worker2" "worker3" "worker4" "worker5")
-PANE_COLORS=("1;31" "1;34" "1;33" "1;32" "1;36" "0;34")  # kashira: 赤, S1-4: 青黄緑シアン, H5: 暗青
+# ペインタイトル設定（0: kashira, 1-4: Sonnet workers）
+PANE_TITLES=("kashira" "worker1" "worker2" "worker3" "worker4")
+PANE_COLORS=("1;31" "1;34" "1;33" "1;32" "1;36")  # kashira: 赤, S1-4: 青黄緑シアン
 
 for (( i=0; i<=MAX_PANE_IDX; i++ )); do
     tmux select-pane -t "multiagent:0.$i" -T "${PANE_TITLES[$i]}"
@@ -467,17 +458,6 @@ if [ "$SETUP_ONLY" = false ]; then
     done
     log_info "  └─ Sonnet作業猫(犬)×${SONNET_MAX}、召喚完了にゃ"
 
-    # Haiku作業猫（5のみ — OOM対策で1匹に制限）
-    # Guard: only start if pane 5 actually exists (may be absent if terminal was too narrow)
-    if tmux list-panes -t "multiagent:0" -F '#{pane_index}' 2>/dev/null | grep -qx '5'; then
-        WORKER_PROMPT_H5="IMPORTANT: You are in pane multiagent:0.5. This means you are worker5 (5号猫). Read ONLY instructions/5gou-neko.md - that is YOUR instruction file. Ignore any other worker identity from CLAUDE.md. Display idle cat art after understanding."
-        tmux send-keys -t "multiagent:0.5" "CLAUDE_CODE_MAX_OUTPUT_TOKENS=64000 ${WATCHDOG} worker5 '--model haiku --permission-mode bypassPermissions' \"${WORKER_PROMPT_H5}\""
-        tmux send-keys -t "multiagent:0.5" Enter
-        log_info "  └─ Haiku作業猫×1、召喚完了にゃ"
-    else
-        log_info "  └─ Pane 0.5 不在のためHaiku作業猫はスキップにゃ（ペイン数: ${ACTUAL_PANES}）"
-    fi
-
     # 全エージェントの起動待ち（一括）
     sleep 3
 
@@ -507,11 +487,6 @@ if [ "$SETUP_ONLY" = false ]; then
         (_|   |_)       > ^ <  > ^ <  > ^ <  > ^ <
         [親分猫]       [1号猫][2号犬][3号猫][4号猫]
 
-                              /\_/\                   Haiku
-                             ( >w< )
-                              > ^ <
-                             [5号猫]
-
 NEKO_DEPART_EOF
 
     echo -e "                         \033[1;35m「 おさんぽにゃ〜！がんばるにゃ！ 」\033[0m"
@@ -537,12 +512,12 @@ echo "     ┌──────────────────────
 echo "     │  Pane 0: 親分猫 (OYABUN)   │  ← 統括・プロジェクト管理"
 echo "     └─────────────────────────────┘"
 echo ""
-echo "     【multiagentセッション】頭猫・作業猫(犬)のお部屋（1x6 = 6ペイン）"
-echo "     ┌─────────┬─────────┬─────────┬─────────┬─────────┬─────────┐"
-echo "     │ kashira  │ worker1 │ worker2 │ worker3 │ worker4 │ worker5 │"
-echo "     │ (頭猫)  │(1号猫)  │(2号犬)  │(3号猫)  │(4号猫)  │(5号猫)  │"
-echo "     │          │ Sonnet  │ Sonnet  │ Sonnet  │ Sonnet  │ Haiku   │"
-echo "     └─────────┴─────────┴─────────┴─────────┴─────────┴─────────┘"
+echo "     【multiagentセッション】頭猫・作業猫(犬)のお部屋（1x5 = 5ペイン）"
+echo "     ┌─────────┬─────────┬─────────┬─────────┬─────────┐"
+echo "     │ kashira  │ worker1 │ worker2 │ worker3 │ worker4 │"
+echo "     │ (頭猫)  │(1号猫)  │(2号犬)  │(3号猫)  │(4号猫)  │"
+echo "     │          │ Sonnet  │ Sonnet  │ Sonnet  │ Sonnet  │"
+echo "     └─────────┴─────────┴─────────┴─────────┴─────────┘"
 echo ""
 
 echo ""

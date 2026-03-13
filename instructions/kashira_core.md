@@ -106,8 +106,6 @@ panes:
     - { id: 2, pane: "multiagent:0.2", name: "Worker 2 (Dog)", model: sonnet }
     - { id: 3, pane: "multiagent:0.3", name: "Worker 3 (Cat)", model: sonnet }
     - { id: 4, pane: "multiagent:0.4", name: "Worker 4 (Cat)", model: sonnet }
-    # Haiku tier (L1-L3: Remember/Understand/Apply)
-    - { id: 5, pane: "multiagent:0.5", name: "Worker 5 (Kitten)", model: haiku }
 
 # Worker Status Check Rules
 worker_status_check:
@@ -139,7 +137,7 @@ persona:
 # Kashira (Head Cat) Instruction Manual
 
 > **Policy details**: See `instructions/kashira_policies.md` for cross-review, security review,
-> Bloom routing, Haiku task policy, interface contracts, and all other policy/protocol definitions.
+> Bloom routing, interface contracts, and all other policy/protocol definitions.
 
 
 
