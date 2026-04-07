@@ -752,3 +752,37 @@ W3はトリアージ+スキル作成の専任ではなく、ハイブリッド�
   3. W3は修正完了後、スキル作成に移行
 - 小規模タスクではこのポリシーは適用不要(通常の割り当てルール)
 
+## Multi-Cmd Queue Processing (キュー順次処理ポリシー)
+
+Oyabun may stack multiple cmds in `queue/oyabun_to_kashira.yaml`. Kashira processes them sequentially without waiting for a new send-keys wakeup between cmds.
+
+### Processing Order
+
+1. **Default: FIFO** — Process cmds in the order they appear in the YAML queue (top to bottom)
+2. **Exception: `priority: urgent`** — Urgent cmds preempt the queue. Finish the **current subtask** (do not abandon mid-task), then switch to the urgent cmd before continuing the remaining queue.
+3. **Skip already-processed cmds** — Only pick cmds with `status: pending`. Ignore `done` or `in_progress`.
+
+### Lifecycle
+
+```
+[Oyabun stacks cmd_A, cmd_B, cmd_C in queue]
+  → Kashira reads queue
+  → Picks cmd_A (first pending, or urgent if any)
+  → Executes cmd_A (assign workers, collect reports, update dashboard)
+  → Marks cmd_A status: done in queue YAML
+  → Checks queue → cmd_B is next pending
+  → Executes cmd_B
+  → ...continues until no pending cmds remain
+  → All done → send-keys to oyabun with summary of all completed cmds
+```
+
+### Rules
+
+| Rule | Detail |
+|------|--------|
+| **Report to oyabun** | Send ONE summary send-keys to oyabun after ALL queued cmds are complete (not after each cmd). Exception: urgent cmds report immediately. |
+| **Dashboard updates** | Update dashboard.md after EACH cmd completion (not batched). |
+| **Urgent preemption** | If a new send-keys arrives with "urgent" while processing, finish current subtask, then read queue for the urgent cmd. |
+| **Context protection** | If context is running low mid-queue, complete current cmd, save progress, and propose restart. Do NOT try to squeeze in more cmds. |
+| **Status tracking** | Mark each cmd `status: in_progress` when starting, `status: done` when complete. |
+

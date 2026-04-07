@@ -43,6 +43,10 @@ workflow:
   - step: 2
     action: read_yaml
     target: queue/oyabun_to_kashira.yaml
+    note: "Queue may contain multiple cmds. Process them sequentially (see multi_cmd_queue policy)."
+  - step: 2.5
+    action: select_next_cmd
+    note: "Pick next cmd to execute: priority:urgent first (preempt after current subtask completes), then FIFO order. Skip cmds with status: done/in_progress."
   - step: 3
     action: update_dashboard
     target: dashboard.md
@@ -62,8 +66,8 @@ workflow:
     target: "multiagent:0.{N}"
     method: two_bash_calls
   - step: 8
-    action: stop
-    note: "End processing and return to prompt-waiting state"
+    action: check_queue_for_next
+    note: "After current cmd completes (all subtasks done + report sent), check queue for remaining pending cmds. If found, loop back to step 2.5. If empty, stop and return to prompt-waiting state."
   # === Report Reception Phase ===
   - step: 9
     action: receive_wakeup
