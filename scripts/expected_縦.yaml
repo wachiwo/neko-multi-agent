@@ -1,0 +1,184 @@
+# Layout Invariant Expected (vertical / 縦並び)
+# cmd_184_3layer_defense Day 0 — layer 3
+# 由来: cmd_184_brainstorm Q5 (W4 提案) + subtask_184_rollback_003_w4 検証経験 (overflow=0だが横並び/折りたたみ削除を実機検出)
+# 想定 baseline: 基準_縦.html (cmd_183 最終、display:none アニメなし版)
+# 適用先: new/*.html のうち vertical 判定ファイル (classify_forms.py で verdict=vertical)
+
+version: "1.0"
+form_label: "vertical"
+
+rules:
+
+  # ====== layer 3 RULE 1: form-row が grid (1fr/auto/max-content 系) ======
+  - id: form-row-display-grid
+    rule_type: computed_style
+    selector: ".form-row"
+    severity: high
+    sample_limit: 30
+    expect:
+      computed_style:
+        display: grid
+    diag: |
+      .form-row は display:grid である必要がある。
+      flex/block になっている場合、想定の Grid レイアウトが効かない (column 数指定が無視される)。
+
+  # ====== RULE 2: form-row gridTemplateColumns が 1fr 系 (有効な Grid 列指定) ======
+  - id: form-row-grid-columns-valid
+    rule_type: computed_style
+    selector: ".form-row"
+    severity: medium
+    sample_limit: 30
+    expect:
+      computed_style:
+        gridTemplateColumns_regex: '\d+(\.\d+)?(px|fr)|auto|minmax|repeat|max-content|min-content'
+    diag: |
+      gridTemplateColumns が "none" の場合、Grid が機能していない。
+      期待: "1094px" / "537px 537px" / "1fr 1fr" / "1fr" / "repeat(N, ...)" 等の有効値。
+
+  # ====== ★最重要★ RULE 3: form-field が flex-direction:column ======
+  # 経緯: subtask_184_rollback_003_w4 で BROKEN 052 が flex-direction:row だったため横並び化していた根本原因
+  - id: form-field-flex-direction-column
+    rule_type: computed_style
+    selector: ".form-field"
+    severity: high
+    sample_limit: 30
+    expect:
+      computed_style:
+        flexDirection: column
+    diag: |
+      ★縦並びの根本要件★ .form-field は flex-direction:column であること。
+      row だと label が input の左に並び「横並びのまま」状態になる (cmd_184_hotfix_005 NG パターン)。
+
+  # ====== RULE 4: 幾何関係で label が input の上にある (vertical stacking) ======
+  - id: form-field-label-above-input
+    rule_type: geometric
+    selector: ".form-field"
+    severity: high
+    sample_limit: 30
+    expect:
+      geometric:
+        vertical_stacking: true   # label.bottom <= input.top + 2 を満たす
+    diag: |
+      ご主人様の目線そのまま: label が input の上に視覚的に配置されているか。
+      flex-direction が column でも、label が幅 100% でなく横にズレている等の異常検出。
+
+  # ====== ★折りたたみ機能削除事故 防止 (W4 052検証で発見) ======
+  # subtask_184_rollback_003_w4: data-component='CollapsibleSection' が 11個ある CURRENT 052 で
+  # collapsible-header が 0 個 = W1 が JS 機能を完全削除していたパターン。再発防止 conditional rule。
+  - id: collapsible-component-implementation-consistency
+    rule_type: conditional
+    if_selector_exists: '[data-component="CollapsibleSection"]'
+    then_check:
+      selector: ".collapsible-header"
+      min_count: 1
+    severity: high
+    diag: |
+      ★折りたたみ削除事故★ data-component="CollapsibleSection" が宣言されているのに
+      .collapsible-header が DOM に存在しない = JS 折りたたみ機能の実装欠落。
+      cmd_184_rollback_052 で W1 単独再着手版が機能完全削除した実例の再発防止ルール。
+      この警告が出たら: ご主人様意図 (機能必要 or 不要) を確認した上で、
+      機能必要 → .collapsible-header + onclick=toggleSection を追加 / 不要 → data-component を削除。
+
+  # ====== RULE 6: data-component=InputLayout に data-orientation 属性 ======
+  - id: input-layout-orientation-attr
+    rule_type: conditional
+    if_selector_exists: '[data-component="InputLayout"]'
+    then_check:
+      selector: '[data-component="InputLayout"][data-orientation]'
+      min_count: 1
+    severity: medium
+    diag: |
+      data-component="InputLayout" には data-orientation="vertical|horizontal" 属性必須
+      (cmd_182 8 種正規 で確立、機械判定の基盤)。
+
+  # ====== RULE 7: 旧方言 class 残存検出 (.search-form-row / .section-header etc) ======
+  - id: dialect-residue-search-form-row
+    rule_type: existence
+    selector: '[class~="search-form-row"], [class~="search-form-field"], [class~="section-header"]'
+    severity: medium
+    expect:
+      existence:
+        max_count: 0
+    diag: |
+      cmd_184 R1/R2 で正規化済みの旧方言 (.search-form-row / .search-form-field / .section-header)
+      が DOM に残っていれば未改修ファイル。.form-row / .form-field / .collapsible-header に統一済かを検査。
+
+  # ====== ★RULE 7.5: .form-field align-items stretch 禁止 (cmd_184_form_field_stretch_fix) ======
+  # 経緯: 基準_縦.html (cmd_181 由来) の .form-field に align-items: stretch があり、子 input/button/checkbox が
+  #       親幅いっぱいに伸長していた。ご主人様指摘「チェックを入れるだけなのにこんなに広げる必要はない」。
+  #       W1 が基準_縦 + 052 の .form-field を stretch → flex-start に修正 (cmd_184_form_field_stretch_fix)。
+  #       再発防止のため、.form-field の align-items が stretch であれば FAIL にする。
+  - id: form-field-no-stretch-align
+    rule_type: computed_style
+    selector: ".form-field"
+    severity: high
+    sample_limit: 30
+    expect:
+      computed_style:
+        alignItems_forbidden: ["stretch"]
+    diag: |
+      ★cmd_184_form_field_stretch_fix 再発防止★
+      .form-field の align-items が stretch だと子要素 (input/button/checkbox) が親幅いっぱい伸長する。
+      期待値: flex-start / center / flex-end 等 (stretch 以外)。
+
+  # ====== RULE 7.6: button 幅が親の 50% 超過を検出 (button_width_check) ======
+  # ご主人様「ちぇっくを入れるだけなのにこんなに広げる必要はない」の機械化。
+  # 子要素過剰伸長の検出範囲を form-field 内の button に拡張。
+  - id: button-width-not-over-half-parent
+    rule_type: width_ratio_check
+    selector: ".form-field button"
+    max_width_ratio_to_parent: 0.5
+    min_parent_width_px: 200          # tight wrapper (≤200px) は skip (false positive 回避)
+    compare_to_ancestor: ".form-field" # 直接親ではなく .form-field 祖先と比較
+    severity: medium
+    sample_limit: 30
+    diag: |
+      .form-field 内の button の width が .form-field (祖先) の 50% を超えていれば過剰伸長。
+      「チェックを入れるだけの button」は幅 20-30% 程度に収まるべき (ご主人様指摘の機械化)。
+      stretch や width:100% 指定の副作用を検出可能。
+      ※tight wrapper (200px 未満の .form-field) は skip: アイコン button など意図的な小サイズケース。
+
+  # ====== ★RULE 7.7: viewport overflow check (100/150/200% 全PASS必須) ======
+  # 経緯: cmd_184 Phase A B1 で ご主人様が 036 を 200% 拡大目視時にはみ出しバグ発見。
+  #       1200px viewport では検出されないが、800px (150%相当) / 600px (200%相当) では明白に overflow。
+  #       overflow 指標 + multi-viewport で機械検出可能。今後の絶対ルール:
+  #       「ご主人様確認依頼時は必ず 100/150/200% 3viewport スクショ全件提示」を機械化。
+  - id: viewport-overflow-check-multi-zoom
+    rule_type: viewport_overflow_check
+    severity: high
+    viewports: [1200, 800, 600]   # 100% / 150% / 200% 相当 (1200/1.5≒800, 1200/2.0=600)
+    target_selectors:
+      - "input"
+      - "button"
+      - "label"
+      - ".form-field"
+      - ".table-wrapper"
+      - "table"
+    sample_limit: 50
+    diag: |
+      ★cmd_184_phase_a_pivot 由来★ 100/150/200% 3 段階 viewport で:
+        1. document.scrollWidth が viewport を超えていないか (横スクロール無し)
+        2. 各 target_selector の getBoundingClientRect().right が viewport を超えていないか
+        3. element の left が < 0 になっていないか
+      1 個でも overflow 検出 → FAIL。サンプリング禁止、3 viewport 全件必須 PASS。
+
+  # ====== ★RULE 8: 折りたたみ click_test (全件必須、サンプリング禁止) ======
+  # 経緯: subtask_184_revive_002_w4 で貴君 (W4) がサンプリング 3/3 を「OK」と誤報告 → 実態 11 中 8 未検査 + 3 FAIL。
+  #       ★サンプリング検査は禁止★、all policy 必須化で再発防止。
+  - id: collapsible-folding-functional-test-all
+    rule_type: click_test
+    selector: ".collapsible-header"
+    click_policy: all          # ★ required ★ — "sample" は deprecated、使用すれば tool 側で policy_violation
+    required_pass_ratio: 1.0   # 100% 必須 (1 つでも FAIL なら rule FAIL)
+    verify:
+      strategy: auto           # display_toggle / class_toggle / section_class_toggle を順次試行
+    severity: high
+    diag: |
+      ★全件 click 必須 (サンプリング禁止)★
+      collapsible-header 全要素に対してクリック → state 変化 (display / class) を機械確認。
+      成功比率 < 1.0 なら rule FAIL。分母明示 (N/M) で網羅性を一目で判定可能に。
+      cmd_184_052_pattern_b_fix で確立された再発防止規約。
+
+# ====== 適用除外マーカー ======
+# HTML の <body data-no-layout-check="true"> で全ルール skip 可能 (no_form/特殊画面用)
+# 個別ルール除外は将来 rule.applies_unless: ... で実装予定
