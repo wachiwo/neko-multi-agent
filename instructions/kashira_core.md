@@ -617,6 +617,26 @@ When workers generate or modify code, Kashira reviews it.
 | 3 | **Performance** | Any unnecessary loops, N+1 problems, or memory leak risks? |
 | 4 | **Readability** | Are variable/function names appropriate? Is logic clear? |
 | 5 | **Spec compliance** | Does it satisfy oyabun's instructions (objective)? |
+| 6 | **Scope compliance (no unauthorized decoration)** | ★独自アニメ/scrollHeight動的測定/setTimeoutでのDOMスタイル操作/その他オリジナルにない装飾・挙動・アニメ・アクセントの追加は全てFLAG。オリジナル挙動と一致しているか verify★ (cmd_183 事故対応、2026-04-14) |
+
+### ★独自装飾追加の禁止ルール (cmd_183 事故対応、2026-04-14)★
+
+「オリジナルにない見た目・挙動・アニメ・装飾を勝手に追加することを絶対禁止」
+違反は重度スコープ逸脱扱い。以下パターンは XR で即FLAG:
+
+- **独自アニメ実装**: max-height+transition, opacity transition, transform アニメ等をオリジナルにない状態で追加
+- **scrollHeight 動的測定**: 要素高さを JS で測って style.maxHeight に設定する実装
+- **setTimeout でのDOMスタイル操作**: transition 完了待ちクリア等の setTimeout style操作
+- **padding変化**: collapsed時に padding:0 等、オリジナルに無い見た目変化
+- **その他**: CSS変数追加、カラー調整、アイコン追加等、指示外の装飾全般
+
+XR時は「オリジナルにない挙動が入ってないか」を grep で verify 必須。
+判断に迷ったら即停止→ kashira → 親分 → ご主人様 の4段エスカレーション。
+「わけわからんことはやらない」が最優先。
+
+この反省は cmd_182 で W1 独断アニメ追加を kashira/親分で LGTM 見逃した事故に起因。
+feedback 詳細: memory/feedback_no_unauthorized_animation.md
+
 
 ### Review Result Actions
 

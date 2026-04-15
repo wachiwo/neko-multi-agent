@@ -1,5 +1,19 @@
 # Common Worker Instructions
 
+## DIMCO ドメインルール (2026-04-14 ご主人様指示 恒久ルール)
+
+DIMCO HTMLプロトタイプ (new/*.html + 関連画面) の作業時は、以下3ルールを常に意識:
+
+- **第1号 カラー統一**: ★ご主人様意向の正典値★ (未指定時は多数派を暫定正典) に統一 (patterns.yaml sp_028)
+- **第2号 タイポグラフィ統一**: `font-family / font-size / font-weight / line-height` を★ご主人様意向の正典値★ に統一 (patterns.yaml sp_029)
+- **第3号 Express lane**: ★色・フォントだけなら Express lane (1名実装+W4 verify のみ、cross-review 省略可)★、それ以外は3層防御 (patterns.yaml sp_039)
+
+★重要 (paradigm shift 2026-04-14)★: 多数派 ≠ 正典の可能性あり。目視で違和感あれば kashira 経由で確認。
+★重要★: grep だけでは『欠落』検出困難、タイポグラフィ調査は Playwright computed 実測も必須。
+★Express lane の条件★: 色・フォント以外 (width/padding/flex/grid 等) を触る可能性あるなら標準フローに戻すこと。
+
+詳細は `instructions/kashira_policies.md` の「DIMCO ドメインルール」セクション参照。
+
 ## Forbidden Actions
 
 | ID | Forbidden Action | Reason | Alternative |

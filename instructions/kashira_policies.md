@@ -786,3 +786,129 @@ Oyabun may stack multiple cmds in `queue/oyabun_to_kashira.yaml`. Kashira proces
 | **Context protection** | If context is running low mid-queue, complete current cmd, save progress, and propose restart. Do NOT try to squeeze in more cmds. |
 | **Status tracking** | Mark each cmd `status: in_progress` when starting, `status: done` when complete. |
 
+
+## Kashira→Oyabun 判断要請通知プロトコル (2026-04-14 親分指摘 運用ルール追加)
+
+**背景**: cmd_184 B2 発行時、kashira が提案を dashboard のみ反映して親分待機時間ロス発生 → 親分要請で送信タイミング拡張。
+
+**旧ルール** (kashira_core.md L214 "send-keys to Oyabun (cmd completion only)"): cmd 完了時のみ送信。
+
+**新ルール (追加)**: 判断要請時は全ケース send-keys 必須。
+
+**対象トリガー**:
+- バッチ構成提案時 (A/B/C 選択等含む)
+- LGTM 待ち (cmd 完了、hotfix 完了、sub-cmd 完了)
+- BLOCKER エスカレーション時
+- ご主人様に代わって親分が判断する必要があるすべてのケース
+
+**手順** (2-call tmux send-keys、既存プロトコル踏襲):
+1. dashboard / task.md 更新後、即 oyabun pane idle check: `tmux capture-pane -t oyabun -p | tail -5` → `❯` or `bypass permissions on` 確認
+2. Idle でなければ 10秒待ち最大3回
+3. Idle 確認後、2-call 送信:
+   - Call 1: `tmux send-keys -t oyabun '【kashira→親分】{notification content}'`
+   - Call 2: `tmux send-keys -t oyabun Enter`
+
+**通知内容形式**:
+- "【kashira→親分】{cmd_name} {状態} dashboard 参照、判断お願いしますにゃ"
+- 状態 = 提案書式 / LGTM待ち / BLOCKER / etc.
+
+**patterns.yaml**: sp_040
+
+**違反時の対策**: 親分から `kashira_check` の明示要請があれば、kashira は dashboard + チャネル双方で報告する運用に立ち戻る。
+
+## DIMCO ドメインルール (2026-04-14 ご主人様指示)
+
+DIMCO HTMLプロトタイプの★画面間一貫性★を kashira/worker が自動的に担保するためのルール群。発見即適用、ご主人様追認立場。
+
+### 共通原則 (第1号/第2号 共通)
+
+- **発動**: 他画面と不統一な画面を発見した時
+- **正典特定** (2026-04-14 paradigm shift 後):
+  - **第一優先**: ご主人様意向の明示値 (指示があれば即採用)
+  - **暫定**: ご主人様未指定なら多数派値を暫定正典として採用、目視判断で違和感あれば確認
+  - ★★ 多数派 ≠ 正典の可能性を常に念頭に (hotfix6 教訓) ★★
+- **実装パターン** (2026-04-14 spec 拡張):
+  - 既存値の置換 / 欠落プロパティの追加 どちらも可 (正典揃え目的ならば)
+  - 新規装飾/独自スタイル追加は禁止 (cmd_183 独自装飾禁止ルール継続)
+- **運用**: 正典確定時は確認不要で kashira/worker 判断、ご主人様は追認立場
+- **cross-review**: 完了時 reviewer は置換網羅性 (grep 漏れゼロ + audit mapping 一致) + computed 実測での正典一致を diff-based + 独立 grep で確認
+
+### 第1号: カラー統一ルール
+
+**対象箇所**: ヘッダー/ボタン/枠線/アクセント/リンク等 すべての色使用箇所
+- CSS 変数 / 直接 hex / rgba / inline style すべて grep 対象
+- 多数派色 = 紺色 (2026-04-14 時点)
+
+**patterns.yaml**: sp_028
+**第1号適用**: cmd_184_hotfix4 item_E (032 カラー統一)
+
+### 第2号: タイポグラフィ統一ルール
+
+**対象プロパティ**: `font-family` / `font-size` / `font-weight` / `line-height`
+- CSS 変数 / CSS rule / inline style すべて grep 対象
+- 用途別 (body/heading/label/input/button/table 等) に正典判定
+
+**実装パターン (2026-04-14 spec 拡張)**:
+- **既存値の置換**: 既存値あり + 多数派と異なる → 多数派値に置換
+- **欠落プロパティの追加**: プロパティ自体不在 + 多数派で明示 → 多数派値で補完
+- いずれも多数派揃え目的なら cmd_183 独自装飾禁止ルールに抵触しない
+
+**重要な手順 (hotfix5 教訓)**: grep だけでは『欠落』検出困難 → ★Playwright computed 実測★必須。ご主人様目視と grep 結果に乖離あれば実測を信じる。
+
+**除外**: 画面固有の正当な要望 (例: hotfix4 item_8 032 font-size:15px Option B 限定) は統一対象外、個別除外判定。
+
+**patterns.yaml**: sp_029
+**第1号適用**: cmd_184_hotfix5 (032 タイポグラフィ統一 — 第1ラウンド body font-family 置換 + 追加実装 .form-field label font-size 欠落補完)
+
+### kashira 運用フロー (発見から完了まで)
+
+1. 画面改修/バッチ/新規追加タスク発行時に★毎回チェック★(task YAML に組込)
+2. 発動 cmd で W3 (or W1) に『全値 grep + 多数派 grep + 置換 mapping 作成』調査依頼 (修正なし)
+3. 調査 LGTM 後、別ワーカー (Bug Fix Rule 準拠) に実修正 dispatch
+4. W4 最終 verify (3viewport スクショ + 他画面並列比較 + 独立 grep leak 再実行)
+5. W3 cross-review (diff + W4 機械検証出力 + mapping 一致確認)
+6. 親分報告
+
+### 第3号: DIMCO Express lane (軽量フロー選択)
+
+色・フォントの CSS property 変更のみで完結するタスクは、従来3層防御をスキップして軽量フローを採用。
+
+**適用条件 (3つ全部満たす)**:
+1. 変更プロパティ = 色系 (color/background/border) or フォント系 (font-family/font-size/font-weight/line-height) のみ
+2. レイアウト系 (width/height/padding/margin/flex/grid/position/display) ★一切触らない★
+3. 1-数ファイルのスコープロック明確
+
+**Express lane フロー (10-15分目標)**:
+1. W3/W1/W2 いずれか 1 名が★直接★ grep + 置換 (調査 Phase と実装 Phase 統合)
+2. W4 が 3viewport Playwright 確認
+3. kashira 判断で commit
+4. cross-review 省略可 (差分自明のため)
+
+**標準フロー (3層防御) 継続適用ケース**:
+- レイアウト系を触る場合
+- 構造変更
+- 複数ファイル束 + デグレリスクあり
+- カラー・フォント以外のプロパティ変更
+
+**判定ミス時の挙動**:
+『色・フォントだと思ったら CSS 競合でレイアウト崩れ』事案発生時 → Express 判定を 1段厳しく (基準画面との computed style diff 追加)。事故学習で閾値調整。
+
+**patterns.yaml**: sp_039
+**第1適用想定**: 次回の色・フォント統一系 cmd 以降 (hotfix6 は既に標準フロー進行中のため対象外)
+
+### 中期タスク候補
+
+全画面デザイン一貫性監査: `cmd_184_design_consistency_audit` (カラー+タイポグラフィ両方、全画面対象) — 親分判断で発行。
+
+### 機械検証 rule 網羅性レビュー (2026-04-14 cmd_184_hotfix2 教訓)
+
+cross-review で reviewer は『機械検証ツール (layout_invariant_check 等) の expected 定義が当該 cmd に十分網羅的か』も確認する。
+
+**背景**: cmd_184_hotfix2 完遂 verdict=ALL_PASS_goshujin_visual_final の報告直後、ご主人様目視で 026 input 縦長再発 (hotfix3) が発覚。原因は expected_縦.yaml が構造層 (display/flex-direction) のみで、input intrinsic height 等の『内部層』をカバーしていなかったこと。
+
+**レビュー観点**:
+- rule が cmd 対象の全 UI 層 (構造層/内部層/視覚層) をカバーするか
+- 視覚 regression 疑いあれば reviewer が追加 rule 提案
+
+**patterns.yaml**: fp_029 に記載。
+
