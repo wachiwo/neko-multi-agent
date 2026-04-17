@@ -1,5 +1,7 @@
 # Worker-to-Worker Communication (P2P Review & Heads-Up)
 
+> **send-keys mechanics**: see `instructions/_rules/send_keys_protocol.md`.
+
 Workers can message each other directly ONLY when the task YAML enables it:
 
 | Type | Trigger | Purpose | Response expected? |

@@ -26,6 +26,7 @@ forbidden_actions:
     action: polling
     description: "Polling (wait loops)"
     reason: "Wastes API credits"
+    enforced_by: "PreToolUse hook (scripts/check-polling.sh) — blocks at Bash tool invocation"
   - id: F005
     action: skip_context_reading
     description: "Starting work without reading context"
@@ -106,22 +107,15 @@ files:
 panes:
   kashira: multiagent:0.0
 
-# send-keys Rules
+# send-keys Rules (mechanics: see instructions/_rules/send_keys_protocol.md)
 send_keys:
-  method: two_bash_calls
-  reason: "Enter is not interpreted correctly in a single Bash call"
   to_kashira_allowed: true
+  to_workers_allowed: false    # Workers are kashira's responsibility (F002)
   from_kashira_allowed: true   # Only for cmd completion notifications (arrives after idle check)
 
-# Kashira Status Check Rules
+# Kashira Status Check (mechanics: see instructions/_rules/send_keys_protocol.md § Idle Detection)
 kashira_status_check:
-  method: tmux_capture_pane
-  command: "tmux capture-pane -t multiagent:0.0 -p | tail -5"
-  idle_detection: positive  # Look for idle indicators (not busy indicators)
-  idle_indicators:
-    - "❯ "              # Prompt displayed = waiting for input
-    - "bypass permissions on"  # Waiting for permission input
-  rule: "If any idle_indicator is found in the last 5 lines → idle. Otherwise → busy."
+  target: "multiagent:0.0"
   when_to_check:
     - "Before sending instructions, verify kashira is not busy"
     - "When waiting for task completion, check progress"
@@ -225,27 +219,13 @@ date "+%Y-%m-%dT%H:%M:%S"
 
 ## tmux send-keys Usage (Critical)
 
-### Absolutely Forbidden Patterns
+**Mechanics (2-call rule, forbidden patterns, idle detection)**: see `instructions/_rules/send_keys_protocol.md`.
 
-```bash
-# BAD example 1: single line
-tmux send-keys -t multiagent:0.0 'message' Enter
-
-# BAD example 2: chained with &&
-tmux send-keys -t multiagent:0.0 'message' && tmux send-keys -t multiagent:0.0 Enter
-```
-
-### Correct Method (two separate calls)
-
-**[Call 1]** Send the message:
-```bash
-tmux send-keys -t multiagent:0.0 'New instructions in queue/oyabun_to_kashira.yaml. Check and execute.'
-```
-
-**[Call 2]** Send Enter:
-```bash
-tmux send-keys -t multiagent:0.0 Enter
-```
+**Oyabun-specific rules**:
+- Target: `multiagent:0.0` (kashira) only. Workers are kashira's responsibility — do NOT send-keys to `multiagent:0.1`-`0.4` (violates F002).
+- When to send: after writing a new cmd to `queue/oyabun_to_kashira.yaml`, to wake kashira.
+- Idle check before sending: required (kashira may be mid-task).
+- Example message: `'New instructions in queue/oyabun_to_kashira.yaml. Check and execute.'`
 
 ## Writing Instructions (YAML Queue)
 

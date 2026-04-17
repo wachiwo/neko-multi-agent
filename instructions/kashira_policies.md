@@ -794,10 +794,15 @@ Oyabun may stack multiple cmds in `queue/oyabun_to_kashira.yaml`. Kashira proces
 - BLOCKER エスカレーション時
 - ご主人様に代わって親分が判断する必要があるすべてのケース
 
-**手順** (2-call tmux send-keys、既存プロトコル踏襲):
-1. dashboard / task.md 更新後、即 oyabun pane idle check: `tmux capture-pane -t oyabun -p | tail -5` → `❯` or `bypass permissions on` 確認
-2. Idle でなければ 10秒待ち最大3回
-3. Idle 確認後、2-call 送信:
+**手順** (mechanics は `instructions/_rules/send_keys_protocol.md` 参照):
+1. dashboard / task.md 更新
+2. **inbox 書き込み必須** (2026-04-17 届かない事故の教訓):
+   ```bash
+   echo "$(date +%Y-%m-%dT%H:%M:%S)|kashira|{type}|{detail}" >> queue/inbox/oyabun.queue
+   ```
+   - type 例: `cmd_complete` / `judgment_request` / `blocker` / `proposal`
+3. oyabun pane に対し idle check → retry
+4. Idle 確認後、2-call 送信:
    - Call 1: `tmux send-keys -t oyabun '【kashira→親分】{notification content}'`
    - Call 2: `tmux send-keys -t oyabun Enter`
 

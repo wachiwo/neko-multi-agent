@@ -40,19 +40,13 @@ Always use `date "+%Y-%m-%dT%H:%M:%S"` for timestamps. Never guess.
 Read only `queue/tasks/{{WORKER_ID}}.yaml`. Do not read other workers' task files.
 You MAY read other workers' output files in `outputs/` if your task requires it.
 
-## tmux send-keys (Critical: Always 2 Separate Calls)
+## tmux send-keys
 
-send-keys requires **two separate Bash tool calls** — Enter is not interpreted when combined with the message.
+**Mechanics (2-call rule, forbidden patterns)**: see `instructions/_rules/send_keys_protocol.md`.
 
-**[Call 1]** Send the message:
-```bash
-tmux send-keys -t multiagent:0.0 'message text here'
-```
-
-**[Call 2]** Send Enter:
-```bash
-tmux send-keys -t multiagent:0.0 Enter
-```
+**Worker rules**:
+- Target: `multiagent:0.0` (kashira) only. NEVER send-keys to `oyabun` directly — all escalations go through kashira.
+- P2P to sibling workers: only when task YAML enables it (see `instructions/_rules/p2p_comm.md`).
 
 ## Task Completion Protocol
 
@@ -66,7 +60,7 @@ echo "$(date +%Y-%m-%dT%H:%M:%S)|{{WORKER_ID}}|report_done|{{TASK_ID}}" >> queue
 ```
 Format: `timestamp|sender|type|detail`. File appends < 4096 bytes are atomic on Linux.
 
-**STEP 3:** Nudge kashira via send-keys (best-effort wakeup, 2-call method):
+**STEP 3:** Nudge kashira via send-keys (best-effort wakeup, 2-call method — see protocol file):
 ```bash
 tmux send-keys -t multiagent:0.0 '{{WORKER_NAME_CAP}} task complete. Report ready.'
 ```

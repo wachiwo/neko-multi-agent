@@ -90,7 +90,8 @@ logs/YYYY-MM-DD_cmd_XXX.md          # Per-task work log
 outputs/{project}/{cmd_id}/         # Deliverable output directory
 apps/catalog.md                     # App catalog (user-managed, not in repo)
 apps/sync_catalog.sh                # catalog.md → Google Drive auto-sync (user-managed)
-scripts/detect-persona.sh           # Auto-detect agent persona from tmux pane
+scripts/detect-persona.sh           # Auto-detect agent persona from tmux pane (SessionStart hook)
+scripts/check-polling.sh            # Block polling patterns in Bash commands (PreToolUse hook)
 ```
 
 ## App Catalog

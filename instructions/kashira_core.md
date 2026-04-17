@@ -24,6 +24,7 @@ forbidden_actions:
   - id: F004
     action: polling
     description: "Polling (wait loops)"
+    enforced_by: "PreToolUse hook (scripts/check-polling.sh) — blocks at Bash tool invocation"
     reason: "Waste of API costs"
   - id: F005
     action: skip_context_reading
@@ -111,15 +112,9 @@ panes:
     - { id: 3, pane: "multiagent:0.3", name: "Worker 3 (Cat)", model: sonnet }
     - { id: 4, pane: "multiagent:0.4", name: "Worker 4 (Cat)", model: sonnet }
 
-# Worker Status Check Rules
+# Worker Status Check (mechanics: see instructions/_rules/send_keys_protocol.md § Idle Detection)
 worker_status_check:
-  method: tmux_capture_pane
-  command: "tmux capture-pane -t multiagent:0.{N} -p | tail -5"
-  idle_detection: positive
-  idle_indicators:
-    - "❯ "
-    - "bypass permissions on"
-  rule: "If any idle_indicator is found in the last 5 lines → idle. Otherwise → busy."
+  target_template: "multiagent:0.{N}"   # N = 1..4
   when_to_check:
     - "Check if a worker is idle before assigning a task"
     - "Scan all report files when woken up (communication-loss countermeasure)"
@@ -196,32 +191,24 @@ Always use `date "+%Y-%m-%dT%H:%M:%S"` (YAML) or `date "+%Y-%m-%d %H:%M"` (dashb
 
 ## tmux send-keys Usage (Critical)
 
-### Correct Method (always split into 2 Bash calls)
+**Mechanics (2-call rule, forbidden patterns, idle detection, retry)**: see `instructions/_rules/send_keys_protocol.md`.
 
-**[Call 1]** Send message:
-```bash
-tmux send-keys -t multiagent:0.{N} 'Check queue/tasks/worker{N}.yaml for your task. Execute immediately.'
-```
+### Kashira → Workers (`multiagent:0.1` — `multiagent:0.4`)
 
-**[Call 2]** Send Enter:
-```bash
-tmux send-keys -t multiagent:0.{N} Enter
-```
+- When: after writing a task to `queue/tasks/worker{N}.yaml`, to wake the target worker.
+- Idle check first: recommended (don't interrupt a worker mid-task).
+- Example message: `'Check queue/tasks/worker{N}.yaml for your task. Execute immediately.'`
 
-**FORBIDDEN**: Combining message and Enter in one call (`'message' Enter` — Enter won't be interpreted).
+### Kashira → Oyabun (`oyabun`)
 
-### send-keys to Oyabun (cmd completion only)
+- When: **entire cmd complete** only. Never for individual subtasks. Progress updates go to `dashboard.md`.
+- Idle check first: **mandatory** (oyabun may be mid-conversation with goshujinsama).
+- Exception: judgment-requested notifications are allowed mid-cmd (see `kashira_policies.md` § autonomous_decision_rule).
 
-Send to oyabun **only when the entire cmd is complete**. Always confirm idle state first.
+### Forbidden Destinations
 
-1. Check: `tmux capture-pane -t oyabun -p | tail -5`
-2. If `❯` or `bypass permissions on` visible → idle → send. Otherwise → `sleep 10`, retry (max 3).
-3. Send via 2-call method to target `oyabun`
-
-Rules:
-- Send only on **entire cmd completion**, never for individual subtasks
-- Progress updates → dashboard.md only
-- Never skip idle check
+- NEVER send-keys to `multiagent:0.0` — that is MY OWN pane.
+- NEVER send-keys directly to goshujinsama — all human-facing output goes through oyabun.
 
 
 ## Autonomous Decision Rule

@@ -28,4 +28,4 @@ skill_candidate: none           # full block only when found: true
 
 ## Timestamp & send-keys
 - Timestamp: `date "+%Y-%m-%dT%H:%M:%S"`
-- send-keys: **Always 2 calls** — Call 1: message, Call 2: `Enter`
+- send-keys: **Always 2 calls** — Call 1: message, Call 2: `Enter` (full rules: `instructions/_rules/send_keys_protocol.md`)
