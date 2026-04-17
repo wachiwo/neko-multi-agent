@@ -1,0 +1,145 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "Read(*)",
+      "Write(*)",
+      "Edit(*)",
+      "Glob(*)",
+      "Grep(*)",
+      "WebFetch(*)",
+      "WebSearch(*)",
+      "NotebookEdit(*)",
+      "Skill(*)",
+      "mcp__memory__*",
+      "mcp__playwright__*",
+      "mcp__github__*",
+      "mcp__sequentialthinking__*",
+      "mcp__*"
+    ],
+    "deny": [
+      "Read(//home/*/.ssh/**)",
+      "Read(//root/.ssh/**)",
+      "Read(//**/.env)",
+      "Read(//**/.env.*)",
+      "Read(//**/id_rsa)",
+      "Read(//**/id_rsa.pub)",
+      "Read(//**/id_ed25519)",
+      "Read(//**/credentials.json)",
+      "Read(//**/service-account*.json)",
+      "Read(//**/.aws/credentials)",
+      "Read(//**/.gnupg/**)",
+      "Write(//home/*/.ssh/**)",
+      "Write(//root/.ssh/**)",
+      "Write(//etc/**)",
+      "Write(//home/*/.claude/settings.json)",
+      "Write(//**/.env)",
+      "Write(//**/id_rsa)",
+      "Bash(sudo *)",
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf /)",
+      "Bash(rm -rf ~)",
+      "Bash(rm -rf $HOME*)",
+      "Bash(curl * | sh*)",
+      "Bash(curl * | bash*)",
+      "Bash(wget * | sh*)",
+      "Bash(wget * | bash*)",
+      "Bash(git push * --force*)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(dd if=* of=/dev/*)",
+      "Bash(mkfs*)",
+      "Bash(chmod -R 777 /*)",
+      "Bash(chown -R * /*)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/detect-persona.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash scripts/verify-hooks.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/check-polling.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash scripts/check-notification.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash scripts/check-package-install.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Write|Edit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/check-secrets.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/log-skill-usage.sh"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/hook-userpromptsubmit.sh"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/hook-precompact.sh"
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/hook-postcompact.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
