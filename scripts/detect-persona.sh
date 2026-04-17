@@ -40,7 +40,6 @@ case "$SESSION_NAME" in
       2) AGENT="2gou-inu" ;;
       3) AGENT="3gou-neko" ;;
       4) AGENT="4gou-neko" ;;
-      5) AGENT="5gou-neko" ;;
     esac
     ;;
 esac
@@ -60,7 +59,7 @@ if [ -n "$AGENT" ]; then
       cat "$INSTRUCTIONS_DIR/kashira_core.md"
       cat "$INSTRUCTIONS_DIR/kashira_policies.md"
       ;;
-    1gou-neko|2gou-inu|3gou-neko|4gou-neko|5gou-neko)
+    1gou-neko|2gou-inu|3gou-neko|4gou-neko)
       # Worker: 個別差分ファイル + 共通テンプレートを連結
       WORKER_FILE=""
       WORKER_ID=""
@@ -72,7 +71,6 @@ if [ -n "$AGENT" ]; then
         2gou-inu)  WORKER_FILE="2gou-inu.md";  WORKER_ID="worker2"; WORKER_NUM="2"; WORKER_NAME_CAP="Worker2" ;;
         3gou-neko) WORKER_FILE="3gou-neko.md"; WORKER_ID="worker3"; WORKER_NUM="3"; WORKER_NAME_CAP="Worker3" ;;
         4gou-neko) WORKER_FILE="4gou-neko.md"; WORKER_ID="worker4"; WORKER_NUM="4"; WORKER_NAME_CAP="Worker4" ;;
-        5gou-neko) WORKER_FILE="5gou-neko.md"; WORKER_ID="worker5"; WORKER_NUM="5"; WORKER_NAME_CAP="Worker5"; BASE_TEMPLATE="_worker_base_lite.md" ;;
       esac
 
       # 個別差分ファイル（YAML front matter + 個性セクション）

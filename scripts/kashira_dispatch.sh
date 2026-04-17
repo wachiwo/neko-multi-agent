@@ -24,9 +24,6 @@ declare -A PANE_MAP=(
   [worker2]="multiagent:0.2"
   [worker3]="multiagent:0.3"
   [worker4]="multiagent:0.4"
-  [worker5]="multiagent:0.5"
-  [worker6]="multiagent:0.6"
-  [worker7]="multiagent:0.7"
 )
 
 VALID_WORKERS="${!PANE_MAP[*]}"

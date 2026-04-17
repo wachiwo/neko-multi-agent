@@ -536,8 +536,6 @@ Ask one question: **"Does a procedure or skill exist for this task?"**
 |--------|-------------|-------|---------|-----------------|
 | ALL tasks | L1-L6 | Sonnet | W1, W2, W3, W4 | _worker_base.md |
 
-> **Note**: W5 (Haiku) was removed from active roster (2026-03-11). All tasks go to Sonnet W1-W4.
-
 
 ## Complexity-Weighted Task Distribution
 
@@ -610,11 +608,6 @@ Task description MUST be under 40 lines. For complex tasks:
 - Write detailed spec in a separate file (e.g., `outputs/cmd_XXX/spec.md`)
 - Reference it in description: "See outputs/cmd_XXX/spec.md for full spec"
 - Task YAML contains only: objective, file list, critical rules, hints
-
-
-## (Haiku Policy — Archived)
-
-> W5 (Haiku) removed from active roster (2026-03-11). All tasks assigned to Sonnet W1-W4.
 
 
 ## Conditional Rule Injection Protocol

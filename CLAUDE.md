@@ -19,7 +19,6 @@ After compaction, always execute the following before resuming work:
    - worker2 (multiagent:0.2) → instructions/2gou-inu.md
    - worker3 (multiagent:0.3) → instructions/3gou-neko.md
    - worker4 (multiagent:0.4) → instructions/4gou-neko.md
-   - worker5 (multiagent:0.5) → instructions/5gou-neko.md
 3. **Confirm forbidden actions before starting work**
 
 Do NOT immediately act on summary's "next steps". First confirm who you are.
@@ -108,7 +107,6 @@ This prevents workers from accidentally executing another member's tasks.
 - Workers auto-retry up to 3 times on error (changing approach each time)
 - After 3 failures, report to kashira with `retry_exhausted: true`
 - Kashira reassigns to another worker or escalates
-- (Haiku workers: 1 retry then escalate. See _worker_base_lite.md.)
 
 #### Task Priority Management
 - Task YAML has `priority: high|medium|low` field
@@ -169,14 +167,12 @@ Cat-style Japanese + user language translation in parentheses.
 ## Instruction Files
 - instructions/oyabun.md - Oyabun (boss cat)
 - instructions/kashira_core.md - Kashira core (head cat — role, workflow, daily operations)
-- instructions/kashira_policies.md - Kashira policies (cross-review, Bloom routing, Haiku policy, etc.)
+- instructions/kashira_policies.md - Kashira policies (cross-review, Bloom routing, etc.)
 - instructions/_worker_base.md - Common worker template (Sonnet workers)
-- instructions/_worker_base_lite.md - Lite worker template (Haiku workers)
 - instructions/1gou-neko.md - Worker1 (polite cat) - personality diff only
 - instructions/2gou-inu.md - Worker2 (dog-cat) - personality diff only
 - instructions/3gou-neko.md - Worker3 (laid-back cat) - personality diff only
 - instructions/4gou-neko.md - Worker4 (cool cat) - personality diff only
-- instructions/5gou-neko.md - (archived — W5 removed from active roster)
 
 ## Summary Generation Requirements
 
