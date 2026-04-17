@@ -1,0 +1,54 @@
+# cmd YAML template — copy into queue/oyabun_to_kashira.yaml under the `cmds:` list.
+# Replace ALL <…> placeholders before send-keys.
+#
+# Reference: instructions/oyabun.md § cmd format, CLAUDE.md § Communication Protocol
+- id: cmd_<NNN>
+  title: <one-line summary of the ask>
+  status: approved          # approved | in_progress | review | completed | blocked
+  priority: medium          # high | medium | low
+  created_at: <YYYY-MM-DDTHH:MM:SS>
+  requested_by: oyabun
+
+  # WHY this cmd exists — the business/user motivation. Kashira uses this to
+  # decide trade-offs when specs are ambiguous.
+  context: |
+    <1-3 sentences: what problem, whose problem, why now>
+
+  # WHAT must be delivered. Be specific: file paths, acceptance criteria.
+  deliverables:
+    - <file or output 1>
+    - <file or output 2>
+
+  # Files the worker is allowed to touch. Anything outside = scope violation.
+  scope_lock:
+    - <glob or explicit path>
+
+  # Files the worker must NEVER touch in this cmd (even if "obviously related").
+  scope_exclude:
+    - <glob or path>
+
+  # Acceptance criteria — kashira's review checklist.
+  acceptance:
+    - <criterion 1, measurable>
+    - <criterion 2, measurable>
+
+  # Optional: pattern hints from memory/patterns.yaml
+  hints:
+    - <pattern id or snippet>
+
+  # Cross-review policy
+  cross_review:
+    required: true           # default true for third-party deliverables
+    reviewer: auto           # auto | workerN
+
+  # Effort estimate (kashira may revise)
+  effort: M                  # S | M | L
+
+  # Phase Gate: when to pause for oyabun approval before continuing
+  phase_gate:
+    after: <e.g. "Phase 1 baseline complete">
+    require_playwright: false
+
+  # Risk notes — things oyabun flagged as fragile
+  risks:
+    - <risk 1>

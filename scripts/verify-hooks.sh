@@ -43,6 +43,14 @@ compute_line() {
   fi
 }
 
+# --seed mode: emit current checksums to stdout and exit (no compare)
+if [ "${1:-}" = "--seed" ]; then
+  for h in "${HOOKS[@]}"; do
+    compute_line "$h"
+  done
+  exit 0
+fi
+
 # Bootstrap mode: no baseline yet
 if [ ! -f "$BASELINE" ]; then
   {
@@ -87,13 +95,6 @@ if [ "$MISMATCH" -ne 0 ]; then
     echo "  bash scripts/verify-hooks.sh --seed > scripts/hook-checksums.txt"
     echo "(review the diff before committing.)"
   } >&2
-fi
-
-# --seed mode emits to stdout so it can be redirected
-if [ "${1:-}" = "--seed" ]; then
-  for h in "${HOOKS[@]}"; do
-    compute_line "$h"
-  done
 fi
 
 exit 0
