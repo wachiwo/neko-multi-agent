@@ -778,6 +778,8 @@ Oyabun may stack multiple cmds in `queue/oyabun_to_kashira.yaml`. Kashira proces
 | **Urgent preemption** | If a new send-keys arrives with "urgent" while processing, finish current subtask, then read queue for the urgent cmd. |
 | **Context protection** | If context is running low mid-queue, complete current cmd, save progress, and propose restart. Do NOT try to squeeze in more cmds. |
 | **Status tracking** | Mark each cmd `status: in_progress` when starting, `status: done` when complete. |
+| **Retrospective trigger** | After writing `cmd_complete` to inbox, check retrospective conditions (see `instructions/_rules/retrospective.md`). If triggered, dispatch retrospective task before moving to next cmd. |
+| **Skill autocraft trigger** | During retrospective synthesis, evaluate `patterns_to_save` against skill criteria (see `instructions/_rules/skill_autocraft.md`). If a pattern qualifies, draft a proposal to `queue/skill_proposals/`. |
 
 
 ## Kashira→Oyabun 判断要請通知プロトコル (2026-04-14 親分指摘 運用ルール追加)

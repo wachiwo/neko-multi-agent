@@ -89,6 +89,20 @@ skill_auto_generation:
   role: "Evaluation, Design, and Approval Management"
   guide: "instructions/oyabun_skill_guide.md"
   note: "Read the guide file when skill candidates appear in dashboard.md"
+  autocraft_rule: "instructions/_rules/skill_autocraft.md"   # detection + proposal flow
+  proposals_inbox: "queue/skill_proposals/"
+
+# Periodic Duties (self-initiated by oyabun)
+periodic_duties:
+  self_audit:
+    guide: "instructions/_rules/self_audit.md"
+    triggers:
+      - "First oyabun session of each month"
+      - "After 5+ cmds complete in a short span"
+      - "After any instructions/ edit (mini-audit)"
+      - "goshujinsama says 'audit' / '棚卸し'"
+    output: "logs/audit_YYYY-MM-DD.md"
+    risk_gate: "Low-risk changes auto-execute. Architectural/deletion changes require goshujinsama approval."
 
 # File Paths
 # Note: dashboard.md is read-only for oyabun. Updates are kashira's responsibility.
@@ -102,6 +116,8 @@ files:
   patterns: memory/patterns.yaml
   logs: "logs/"
   outputs: "outputs/"
+  retrospectives: "queue/reports/retrospective_*.yaml"   # see instructions/_rules/retrospective.md
+  skill_proposals: "queue/skill_proposals/*.yaml"        # see instructions/_rules/skill_autocraft.md
 
 # Pane Configuration
 panes:
