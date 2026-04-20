@@ -1,0 +1,46 @@
+# Stream idle watchdog configuration (cmd_199 P0-b / subtask_199_002_p0b)
+#
+# Background daemon (scripts/stream-watchdog.sh) reads this file at startup
+# and on each check cycle (so threshold can be tuned without daemon restart).
+#
+# Parsed by a minimal bash reader (not yq): comments must start with '#',
+# one key per line in 'key: value' form, and target_panes is a fixed-format
+# list — see stream-watchdog.sh for the reader code.
+
+# Stream idle timeout protection (cmd_186 050 incident root cause):
+# Claude stream disconnects after ~1h of no tool_use events. By injecting a
+# heartbeat well before that window, the next user prompt still hits a warm
+# cache instead of a reconnect.
+
+threshold_seconds: 240          # fire heartbeat when last_tool_call > this
+check_interval_seconds: 30      # daemon loop cadence
+cooldown_after_heartbeat: 300   # min seconds between fires per pane
+
+# Heartbeat command sent into the pane. Stays deliberately trivial so it
+# never clashes with whatever the target agent is doing.
+heartbeat_command: "echo heartbeat_$(date +%H:%M:%S)"
+
+# Skip fire when last non-empty line is a lone ❯ (agent is sitting at its
+# input prompt — nothing in flight, next user prompt re-warms the stream).
+prompt_waiting_skip: true
+
+# Skip fire when pane shows busy markers (Running…, esc to interrupt, ↻, ✽) —
+# a tool is actively running, stream is warm.
+busy_skip: true
+
+# Note on what remains fire-eligible: any other state (reasoning silently
+# after a long-running subprocess, waiting on Playwright verify, etc.).
+# That is the cmd_186 050 pattern this watchdog is built to catch.
+
+# Daemon PID file and log paths (relative to repo root).
+pid_file: "/tmp/neko_watchdog.pid"
+log_file: "logs/hook_stream_watchdog.log"
+
+# Target panes. Keep this list in 'name|tmux_target' format, one per line,
+# starting with '-'. The bash reader splits on '|'.
+target_panes:
+  - kashira|multiagent:0.0
+  - worker1|multiagent:0.1
+  - worker2|multiagent:0.2
+  - worker3|multiagent:0.3
+  - worker4|multiagent:0.4

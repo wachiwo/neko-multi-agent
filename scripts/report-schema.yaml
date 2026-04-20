@@ -1,0 +1,55 @@
+# report-schema.yaml — schema for queue/reports/*.yaml pre-write validation
+#
+# Consumed by scripts/check-report-schema.sh (PreToolUse Write|Edit hook).
+# Extensible: adding a new forbidden value, scoped section, or numeric field
+# requires editing this file ONLY — the hook script does not need to change.
+#
+# Origin: cmd_199 P0-a (2026-04-20). Enforces sp_041_strict
+# (per-file numstat raw-paste requirement) at write time, so placeholder
+# tokens like "minor" / "N/A" cannot reach a report in the first place.
+
+version: 1
+
+# Values that must not appear as a leaf scalar inside any sp_041_scoped_sections
+# subtree. These values are legal OUTSIDE those sections (e.g. severity: minor
+# in review findings, status: N/A in applicability notes) — scoping is what
+# keeps the rule surgical.
+forbidden_placeholder_values:
+  - "minor"
+  - "N/A"
+  - "?"
+  - "TBD"
+  - "TODO"
+  - "placeholder"
+  - "..."
+
+# Field names that must carry a numeric (int/float) value, but ONLY when they
+# appear inside an sp_041_scoped_sections subtree. A string like "42 (変更なし)"
+# is a sp_041 violation because XR reviewer cannot machine-verify it.
+numeric_fields:
+  - "insertions"
+  - "deletions"
+  - "ins"                  # per_file_summary 短縮形 (sp_041_strict.md §2)
+  - "del"                  # per_file_summary 短縮形 (sp_041_strict.md §2)
+  - "total_ins"            # diff_stat 集計 (sp_041_strict.md §2)
+  - "total_del"            # diff_stat 集計 (sp_041_strict.md §2)
+  - "file_count"           # diff_stat (sp_041_strict.md §2)
+  - "anomaly_threshold"    # diff_stat 閾値 (sp_041_strict.md §2)
+
+# Sections where the above two rules are enforced. Walking the yaml tree,
+# the check enters "scoped mode" the first time it crosses one of these keys,
+# and every descendant scalar is validated.
+sp_041_scoped_sections:
+  - "per_file_numstat"
+  - "numstat_raw"
+  - "numstat"
+  - "diff_check"
+  - "diff_stat"
+  - "change_delta"
+  - "files_changed"        # W1 report 自身が使用、top-level 集計を scope 化
+  - "per_file_summary"     # sp_041_strict.md §2 batch task 例の一等地
+
+# (future-extensible) required_fields_by_report_type — not yet populated.
+# When added, the hook will reject a report that is missing any required
+# key for its declared report type. Left empty on purpose for cmd_199.
+required_fields_by_report_type: {}

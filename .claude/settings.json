@@ -65,6 +65,10 @@
           {
             "type": "command",
             "command": "bash scripts/verify-hooks.sh"
+          },
+          {
+            "type": "command",
+            "command": "nohup setsid bash scripts/stream-watchdog.sh >/dev/null 2>&1 </dev/null &"
           }
         ]
       }
@@ -93,6 +97,10 @@
           {
             "type": "command",
             "command": "bash scripts/check-secrets.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash scripts/check-report-schema.sh"
           }
         ]
       }
@@ -104,6 +112,15 @@
           {
             "type": "command",
             "command": "bash scripts/log-skill-usage.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/stream-watchdog-tick.sh"
           }
         ]
       }
