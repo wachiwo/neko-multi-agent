@@ -369,6 +369,183 @@ D5 (Oyabun Spec) ──> D4 (Interface Contracts) ──> Phase 1 (Implementatio
 - If D5 is wrong, interface contracts propagate the error
 
 
+## Spec Drafting Quality (2026-04-30 cmd_217/cmd_216 spec error incidents)
+
+**背景**: cmd_217 で kashira が collapsible canonical pattern を `<h2 + class="indicator">` と起票したが、実 縦版 016 SSOT は `<div + class="collapsible-indicator">`、命名 drift 混入で W4 hotfix 必要に。さらに cmd_216 #7 で aggregation doc の 043/015 取り違えを着手前に detect できず、W4 self-detect で訂正発生。両件とも ★着手前 5 分の actual file 検証★ で防げた事案。
+
+### Rule 1: Canonical literal 引用 (要約禁止)
+
+spec で canonical pattern (HTML structure / function signature / CSS rule 等) を定義する時:
+
+- ★actual baseline file から literal copy + line range 引用 MUST★
+- 要約 / 推測 / 記憶からの再現 ★禁止★
+- 引用 format 例:
+  ```markdown
+  ### Canonical 基準値 (横版 016 SSOT line 99-105)
+
+  `/mnt/i/.../new横/016_受注一覧.html` line 99-105 から literal copy:
+
+  ```css
+  .page-header .export-section {
+      display: flex;
+      ...
+  }
+  ```
+  ```
+
+- file path + line range が必ず示されている
+- worker は spec の literal block を byte-match で port する
+
+**理由 (W1+W4 提案統合)**: 要約 spec は記憶ノイズ混入リスク、line ref + literal copy は 100% 再現可能。
+
+### Rule 2: Unverified assumptions section (任意箇所明示)
+
+spec 起票時に **kashira 自身が「未検証 / 推測ベース」と認識する箇所** を明示する section を含める:
+
+```markdown
+## 🚨 Unverified Assumptions (kashira self-flag)
+
+- 「053×4 file は 全て collapsible-section pattern を使用している」 — cmd_215 audit 経由の確認、本 spec 起票時に再 grep していない
+- 「.export-section CSS rule の gap 値は 15px」 — 016 SSOT で確認したが他 file は cmd_217 着手前に未確認
+- ...
+```
+
+worker (実装者 / reviewer) は本 section を ★最優先 audit 対象★ として確認、矛盾発見時に kashira/spec 訂正を escalate。
+
+**理由 (W2 提案)**: kashira が「ここは未検証」と書き出せば worker が真っ先 audit、見逃し激減。
+
+### Rule 3: 着手前 5 分 baseline byte diff (kashira 自己 task)
+
+spec dispatch 前に kashira が:
+1. 主張する canonical pattern を実 baseline file から literal grep で確認
+2. 主張する数値 (▽ 10 件等) を実 file で count verify
+3. 上記不整合あれば spec 訂正してから dispatch
+
+**理由 (W4 提案)**: 後付け hotfix より着手前 5 分 audit で防げる。
+
+### 適用条件
+
+| Condition | Apply? |
+|-----------|:---:|
+| canonical pattern を新規定義する spec | **MUST** (Rule 1+2+3) |
+| 既存 canonical を引用するだけ | Rule 1 のみ (line ref 必須) |
+| trivial fix / typo only | 任意 |
+
+### 関連 memory
+
+- `feedback_spec_vs_baseline_diff_required.md` (W4 起源、本 rule の起源)
+- `feedback_canonical_var_drift_fix_immediately.md` (drift 即時解消の精神延長)
+
+### 自己採用日
+
+2026-04-30 (consult_032 retrospective、ご主人様承認受領)
+
+
+## Catalog Reference Discipline (2026-04-30 cmd_227、Tier 2 = 参照規律 4 rules)
+
+**背景**: cmd_225_redo (2026-04-30) で degawa 007_部品一覧/ 4 sample = ★真の canonical SSOT★ が確立、worker 推測 SSOT (016/049/027) 採用禁止が ご主人様 18:30 真意で確定。dimco-parts-catalog.html (cbfbf22) が catalog SSOT、★誰が作っても同じ構造★を仕組み化するため 4 rules 体系化。
+
+cmd_226 以降の DIMCO 全 cmd で適用 MUST。Spec Drafting Quality 3 rules (上記) と補完関係 (Spec = canonical 起票時、Catalog = 既存 catalog 参照時)。
+
+### Rule 1: Catalog 参照 MUST
+
+worker は新規実装 / 修正タスク受領時、★dimco-parts-catalog.html を必ず先に参照★ MUST。
+
+- 該当部品 (table / form / modal / button / 等) を catalog で確認
+- catalog 内 line ref (canonical 引用元 + line range) を report に明示
+- catalog 未参照のまま実装着手禁止
+
+**理由**: cmd_225_redo 以前は worker 推測 SSOT (016/049/027 各々) で drift 続発、各 worker 「自分の知っている baseline」起点で実装。catalog 参照を強制すれば SSOT 一元化。
+
+### Rule 2: 推測実装禁止
+
+★worker が canonical を判断しない、catalog にない部品はカタログ追加から始める MUST★。
+
+- catalog に該当部品がない → 「推測でこれが canonical だろう」で実装禁止
+- 代わりに kashira 経由で catalog 追加 dispatch 起票 (cmd_226+ で別 phase)
+- catalog 追加完遂後、catalog 準拠で実装
+
+**理由**: cmd_225 W3 critical finding (二段ヘッダー = degawa 不在) で「worker 推測せず escalate」が適切判断と確認、worker は推測しないことが正解。
+
+### Rule 3: コピペ + データ差替方式 MUST
+
+★catalog 部品を literal copy + データ差替★ で実装。独自実装禁止。
+
+- HTML structure / class 名 / inline style = catalog 部品 byte-match copy
+- ★差し替えるのは ★data 部分 (input value / option text / label テキスト等) のみ★★
+- structure / class / style 改変禁止
+
+**理由**: cmd_206 第 5 段階 (DIMCO form 構造 049 .excel-table 統一) + cmd_217 collapsible 命名 hybrid drift (kashira spec 起票 error → W4 hotfix) 等の drift 事故 root cause = worker 独自実装。コピペ徹底で root prevention。
+
+### Rule 4: drift 発見時 → catalog 準拠に戻す MUST
+
+drift 発見時、★catalog 準拠に戻す★ MUST。drift 残置禁止。
+
+- cross-review / audit / ご主人様目視 で drift 発見
+- 即時 catalog 準拠に戻す hotfix dispatch (cmd_217 hotfix / cmd_225_redo emergency hotfix と同 protocol)
+- drift 残置 = 次 cmd で別 worker が drift を canonical と誤認するリスク (cmd_205 撤回事故起因)
+
+**理由**: feedback_canonical_var_drift_fix_immediately.md (cmd_205 教訓) を catalog 起点で再強化、drift 即時解消が PERMANENT rule の核心。
+
+### 自己採用日
+
+2026-04-30 (cmd_227、ご主人様 19:32『全部進めて』指示)
+
+
+## Integration Quality Gates (2026-04-30 cmd_227、Tier 4 = 統合品質 3 rules)
+
+**背景**: cmd_225_redo emergency hotfix 事故 (2026-04-30 18:40 ご主人様発見『パーツ全然おかしい、ほぼ何も表示されていない』) が root cause = subtask_225_redo_005 W1 reintegration で「Playwright 8 mandatory check ALL PASS」報告したが HTML 多重ネスト破綻 (outer header unclosed + sidebar 3 closing div 欠落 + body max-width:1100px 制約) で layout 崩壊。computed style 単体 PASS 信仰 = feedback_phase_gate_actual_render 直撃違反。3 段階 deep fix で hotfix 64e1eee 完遂。本 3 rules で system level verify gap 解消、cmd_226 以降全 integration cmd で適用 MUST。
+
+### Rule 1: HTML validator 通過確認 MUST
+
+統合担当 (kashira / 統合 worker) は HTML 統合後、★HTML validator (htmlhint or W3C) 通過確認★ MUST。
+
+- validator 実行 (htmlhint CLI or W3C validator API)
+- output が clean (errors 0) を report に明示
+- unclosed tag / nesting bug を実装段階で catch
+
+**理由**: cmd_225_redo subtask_005 で outer header + div.logo unclosed + sidebar 3 closing div 欠落 = HTML validator 通せば 1 段階目で即発見可能だった。3 段階 deep fix が必要にならなかった。
+
+memory: feedback_html_validator_required.md (W1 起票)
+
+### Rule 2: Playwright integration_verify は visual screenshot 目視確認 MUST
+
+Playwright JSON ALL PASS 報告前に、★Read tool で screenshot 画像を開いて目視確認★ MUST。
+
+- 全 viewport (375 / 960 / 1920) screenshot 撮影
+- ★Read tool で image 開いて目視 verify★ (visible layout / content render / no overflow)
+- Playwright check 出力 vs image visual 不整合あれば image visual 優先
+- kashira / 統合担当 / cross-reviewer ★3 重 image visual verify★ MUST (cmd_225_redo hotfix で実証)
+
+**理由**: cmd_225_redo subtask_005 W1「Playwright 8 ALL PASS」は computed style + element exists 自動 check のみで visible layout 崩壊 detect 不可能だった。feedback_phase_gate_actual_render (cmd_202 教訓) と同型 incident 再発 = system level rule 強化必要。
+
+memory: feedback_visual_screenshot_verify_must.md (W2 起票)、feedback_phase_gate_actual_render.md (補完)
+
+### Rule 3: Cross-review はセクション単位 + 統合後全体 review MUST
+
+Multi-worker integration cmd では、★(a) section 単位 mutual cross-review + (b) 統合後 全体 HTML structure review★ の 2 段階 MUST。
+
+- section 単位 mutual XR = Bug Fix Rule 通常運用 (各担当 section の verify)
+- ★統合後全体 review = 1 名の worker (or kashira) が file 全体を読み、HTML tag pair balance + 全 section 連結部 structure 整合性 verify★
+- HTML validator (Rule 1) + image visual (Rule 2) と組合せで 3 重防衛
+
+**理由**: cmd_225_redo で 4 worker section 各々 mutual XR LGTM (blocker 0) だったが、W1 統合 (subtask_005) 段階で sidebar wrapper 3 closing div 欠落 + outer header unclosed が混入、各 reviewer は自分の担当 section のみ verify で 統合後の構造破綻を見逃した。section 単位 review の盲点 = 統合後全体 review なし。
+
+memory: feedback_integration_whole_review.md (W3 起票)
+
+### 適用条件
+
+| Condition | Apply? |
+|-----------|:---:|
+| Multi-worker section 統合 cmd (catalog / 60 file 展開等) | **MUST** (Rule 1+2+3) |
+| Single-worker file edit | Rule 2 のみ (image visual verify) |
+| Trivial fix / typo only | 任意 |
+
+### 自己採用日
+
+2026-04-30 (cmd_227、ご主人様 19:32『全部進めて』指示、cmd_225_redo emergency hotfix root prevention)
+
+
 ## Pre-Implementation Design Review (Phase 0)
 
 For large tasks, require a design review before parallel implementation begins.
