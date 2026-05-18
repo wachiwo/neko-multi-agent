@@ -521,6 +521,27 @@ Playwright JSON ALL PASS 報告前に、★Read tool で screenshot 画像を開
 
 memory: feedback_visual_screenshot_verify_must.md (W2 起票)、feedback_phase_gate_actual_render.md (補完)
 
+### Rule 2.5: worker self-XR は screenshot image visual evidence 添付 MUST、不在で kashira LGTM 出さず差し戻し MUST (sp_100、2026-05-15)
+
+worker self-XR (cross review) report が JSON check + 構造 grep のみで `visual_evidence` field 不在の場合、★kashira は LGTM 出さず差し戻し MUST★。
+
+- 受領 report の `self_xr` block を確認:
+  - [ ] `screenshot_image_visual_confirmed: yes/no` field 存在?
+  - [ ] `visual_evidence: "..."` field 存在 + 空 or boilerplate でない?
+  - [ ] universal rule 該当時 (button align / 文字横並び / canonical pageheader / universal claim) は 1 件ずつ目視 evidence 1 行ある?
+- 不在 / boilerplate / 空 → ★差し戻し template★:
+  ```
+  self-XR report 差し戻し (sp_100 Rule 2.5):
+  - 不足 field: screenshot_image_visual_confirmed / visual_evidence
+  - 期待: Read tool で {対象 screenshot 画像} 開いて目視 + universal rule 4 件 (button align / 文字横並び nowrap / canonical pageheader / universal claim) 1 件ずつ 目視 evidence 1 行記述
+  - 修正後 report 再提出 MUST
+  ```
+- kashira は universal rule 該当 cmd で本 Rule 2.5 を機械的に履行、JSON+grep PASS 信仰禁止
+
+**理由**: cmd_260 (2026-05-15) で Phase 3.7+3.9+3.10 連続反復違反 6 回目発覚、worker self-XR が JSON + 構造 grep 偏重で visual 目視 skip = 制度形骸化。Rule 2 は integration verify 段階、Rule 2.5 は ★worker self-XR step★ で同型 enforcement、5 file 全 NG / 3 file 再 NG 事故再発防止。
+
+memory: feedback_self_xr_visual_verification_must.md (cmd_260 起票)、sp_100 (本 rule の起源)
+
 ### Rule 3: Cross-review はセクション単位 + 統合後全体 review MUST
 
 Multi-worker integration cmd では、★(a) section 単位 mutual cross-review + (b) 統合後 全体 HTML structure review★ の 2 段階 MUST。
